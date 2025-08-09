@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -56,6 +57,7 @@ export default function ComponentTable({ components, user, onBorrow, onAddCompon
             <TableHead>Name</TableHead>
             <TableHead>Status</TableHead>
             {!minimal && <TableHead className="hidden md:table-cell">Category</TableHead>}
+            {!minimal && <TableHead className="hidden md:table-cell">Quantity</TableHead>}
             <TableHead>
               <span className="sr-only">Actions</span>
             </TableHead>
@@ -76,15 +78,16 @@ export default function ComponentTable({ components, user, onBorrow, onAddCompon
               </TableCell>}
               <TableCell className="font-medium">{component.name}</TableCell>
               <TableCell>
-                <Badge variant={component.status === 'Available' ? 'secondary' : 'destructive'} className="flex items-center gap-1 w-fit">
+                <Badge variant={component.status === 'Available' ? 'outline' : 'destructive'} className="flex items-center gap-1 w-fit">
                   {component.status === 'Available' ? 
                     <CheckCircle2 className="h-3 w-3 text-green-600" /> : 
-                    <XCircle className="h-3 w-3 text-white" />
+                    <XCircle className="h-3 w-3" />
                   }
-                  <span className={component.status === "Borrowed" ? "text-white" : ""}>{component.status}</span>
+                  <span>{component.status}</span>
                 </Badge>
               </TableCell>
               {!minimal && <TableCell className="hidden md:table-cell">{component.category}</TableCell>}
+              {!minimal && <TableCell className="hidden md:table-cell">{component.quantity}</TableCell>}
               <TableCell>
                 {user.role === 'admin' ? (
                    <DropdownMenu>
@@ -139,7 +142,7 @@ export default function ComponentTable({ components, user, onBorrow, onAddCompon
                 Browse and manage all available components.
                 </CardDescription>
             </div>
-            {user.role === 'admin' && (
+            {user.role === 'admin' && onAddComponent && (
                 <Button size="sm" className="gap-1" onClick={onAddComponent}>
                     <PlusCircle className="h-4 w-4" />
                     Add Component
@@ -153,7 +156,7 @@ export default function ComponentTable({ components, user, onBorrow, onAddCompon
       {selectedComponent && (
         <BorrowDialog
             open={isBorrowDialogOpen}
-            onOpenChange={setIsBorrowDialogOpen}
+            onOpenChange={handleDialogClose}
             component={selectedComponent}
             onBorrow={(details) => {
                 onBorrow(selectedComponent, details);
