@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { User } from "@/lib/types";
@@ -6,8 +7,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuGroup,
   DropdownMenuTrigger,
@@ -15,12 +14,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogOut, Moon, Search, Sun, User as UserIcon, Users } from "lucide-react";
+import { LogOut, Moon, Search, Sun, User as UserIcon } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 type HeaderProps = {
   user: User;
-  onRoleChange: (role: "admin" | "member") => void;
   onThemeChange: () => void;
   theme: string;
   onSearch: (term: string) => void;
@@ -28,7 +26,6 @@ type HeaderProps = {
 
 export default function Header({
   user,
-  onRoleChange,
   onThemeChange,
   theme,
   onSearch,
@@ -91,18 +88,6 @@ export default function Header({
                     <span>Profile</span>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuRadioGroup value={user.role} onValueChange={(value) => onRoleChange(value as "admin" | "member")}>
-                  <DropdownMenuLabel>Role</DropdownMenuLabel>
-                  <DropdownMenuRadioItem value="member">
-                    <Users className="mr-2 h-4 w-4" />
-                    Member
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="admin">
-                    <UserIcon className="mr-2 h-4 w-4" />
-                    Admin
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <LogOut className="mr-2 h-4 w-4" />

@@ -89,23 +89,19 @@ export default function ComponentTable({ components, user, onBorrow, onAddCompon
               {!minimal && <TableCell className="hidden md:table-cell">{component.category}</TableCell>}
               {!minimal && <TableCell className="hidden md:table-cell">{component.quantity}</TableCell>}
               <TableCell>
-                {user.role === 'admin' ? (
-                   <DropdownMenu>
-                   <DropdownMenuTrigger asChild>
-                     <Button aria-haspopup="true" size="icon" variant="ghost">
-                       <MoreHorizontal className="h-4 w-4" />
-                       <span className="sr-only">Toggle menu</span>
-                     </Button>
-                   </DropdownMenuTrigger>
-                   <DropdownMenuContent align="end">
-                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                     <DropdownMenuItem><Pencil className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>
-                     <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
-                   </DropdownMenuContent>
-                 </DropdownMenu>
-                ) : (
-                  <Button size="sm" onClick={() => handleBorrowClick(component)} disabled={component.status === 'Borrowed'}>Borrow</Button>
-                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                      <MoreHorizontal className="h-4 w-4" />
+                      <span className="sr-only">Toggle menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem><Pencil className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}

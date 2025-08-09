@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -19,25 +20,16 @@ import { ArrowRight } from "lucide-react";
 export default function DashboardPage() {
   const { toast } = useToast();
   const [theme, setTheme] = React.useState("light");
-  const [userRole, setUserRole] = React.useState<"admin" | "member">("member");
   const [componentsData, setComponentsData] = React.useState<Component[]>(mockComponents);
   const [logsData, setLogsData] = React.useState<Log[]>(mockLogs);
   const [searchTerm, setSearchTerm] = React.useState("");
 
-  const user = mockUsers[userRole];
+  const user = mockUsers.admin;
 
   React.useEffect(() => {
     document.documentElement.classList.remove("light", "dark");
     document.documentElement.classList.add(theme);
   }, [theme]);
-
-  const handleRoleChange = (role: "admin" | "member") => {
-    setUserRole(role);
-    toast({
-      title: "Switched Role",
-      description: `You are now viewing as ${role === "admin" ? "an Admin" : "a Member"}.`,
-    });
-  };
 
   const handleThemeChange = () => {
     setTheme(theme === "light" ? "dark" : "light");
@@ -72,7 +64,6 @@ export default function DashboardPage() {
         <div className="flex flex-col min-h-screen">
           <Header
             user={user}
-            onRoleChange={handleRoleChange}
             onThemeChange={handleThemeChange}
             theme={theme}
             onSearch={setSearchTerm}

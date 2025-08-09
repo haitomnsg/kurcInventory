@@ -7,12 +7,6 @@ export const mockUsers: { [key: string]: User } = {
     role: 'admin',
     avatar: 'https://placehold.co/40x40.png',
   },
-  member: {
-    name: 'Member User',
-    email: 'member@kurc.edu.np',
-    role: 'member',
-    avatar: 'https://placehold.co/40x40.png',
-  },
 };
 
 export const mockComponents: Component[] = [
