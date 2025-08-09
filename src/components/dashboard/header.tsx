@@ -10,6 +10,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -84,12 +85,12 @@ export default function Header({
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                
+                <DropdownMenuGroup>
                   <DropdownMenuItem>
                     <UserIcon className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
-                
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup value={user.role} onValueChange={(value) => onRoleChange(value as "admin" | "member")}>
                   <DropdownMenuLabel>Role</DropdownMenuLabel>
