@@ -35,7 +35,7 @@ export default function Header({
 }: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
+      <div className="container flex h-16 items-center px-4 md:px-6 lg:px-8">
         <SidebarTrigger className="md:hidden" />
         <div className="mr-4 hidden md:flex">
           <a className="flex items-center space-x-2" href="/">

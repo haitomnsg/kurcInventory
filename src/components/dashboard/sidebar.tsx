@@ -22,7 +22,7 @@ export default function AppSidebar({ user }: AppSidebarProps) {
 
     return (
         <Sidebar>
-            <SidebarHeader className="border-b">
+            <SidebarHeader className="border-b h-16 flex items-center">
                 <div className="flex items-center gap-3">
                     <Gem className="h-7 w-7 text-primary" />
                     <span className="text-xl font-semibold">KURC Inventory</span>
