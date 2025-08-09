@@ -134,21 +134,19 @@ export default function ComponentTable({ components, user, onBorrow, onAddCompon
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-            <div>
-                <CardTitle>Inventory</CardTitle>
-                <CardDescription>
-                Browse and manage all available components.
-                </CardDescription>
-            </div>
-            {user.role === 'admin' && onAddComponent && (
-                <Button size="sm" className="gap-1" onClick={onAddComponent}>
-                    <PlusCircle className="h-4 w-4" />
-                    Add Component
-                </Button>
-            )}
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+            <CardTitle>Inventory</CardTitle>
+            <CardDescription>
+            Browse and manage all available components.
+            </CardDescription>
         </div>
+        {user.role === 'admin' && onAddComponent && (
+            <Button size="sm" className="gap-1" onClick={onAddComponent}>
+                <PlusCircle className="h-4 w-4" />
+                Add Component
+            </Button>
+        )}
       </CardHeader>
       <CardContent>
        {tableContent}
