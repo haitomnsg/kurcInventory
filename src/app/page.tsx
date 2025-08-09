@@ -85,7 +85,7 @@ export default function DashboardPage() {
                         </Link>
                     </CardHeader>
                     <CardContent>
-                        <ComponentTable components={componentsData.slice(0,5)} user={user} onBorrow={handleBorrow} minimal />
+                        <ComponentTable components={componentsData.slice(0,5)} onBorrow={handleBorrow} minimal />
                     </CardContent>
                 </Card>
                 <Card>

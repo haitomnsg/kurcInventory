@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Image from "next/image";
-import type { Component, User } from "@/lib/types";
+import type { Component } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,13 +27,12 @@ import { BorrowDialog } from "../borrow-dialog";
 
 type ComponentTableProps = {
   components: Component[];
-  user: User;
   onBorrow: (component: Component, details: { expectedReturnDate: Date; purpose:string }) => void;
   onAddComponent?: () => void;
   minimal?: boolean;
 };
 
-export default function ComponentTable({ components, user, onBorrow, onAddComponent, minimal = false }: ComponentTableProps) {
+export default function ComponentTable({ components, onBorrow, onAddComponent, minimal = false }: ComponentTableProps) {
   const [isBorrowDialogOpen, setIsBorrowDialogOpen] = React.useState(false);
   const [selectedComponent, setSelectedComponent] = React.useState<Component | null>(null);
 
@@ -137,7 +136,7 @@ export default function ComponentTable({ components, user, onBorrow, onAddCompon
             Browse and manage all available components.
             </CardDescription>
         </div>
-        {user.role === 'admin' && onAddComponent && (
+        {onAddComponent && (
             <Button size="sm" className="gap-1" onClick={onAddComponent}>
                 <PlusCircle className="h-4 w-4" />
                 Add Component
