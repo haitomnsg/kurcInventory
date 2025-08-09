@@ -28,10 +28,11 @@ type ComponentTableProps = {
   components: Component[];
   user: User;
   onBorrow: (component: Component, details: { expectedReturnDate: Date; purpose:string }) => void;
+  onAddComponent?: () => void;
   minimal?: boolean;
 };
 
-export default function ComponentTable({ components, user, onBorrow, minimal = false }: ComponentTableProps) {
+export default function ComponentTable({ components, user, onBorrow, onAddComponent, minimal = false }: ComponentTableProps) {
   const [isBorrowDialogOpen, setIsBorrowDialogOpen] = React.useState(false);
   const [selectedComponent, setSelectedComponent] = React.useState<Component | null>(null);
 
@@ -139,7 +140,7 @@ export default function ComponentTable({ components, user, onBorrow, minimal = f
                 </CardDescription>
             </div>
             {user.role === 'admin' && (
-                <Button size="sm" className="gap-1">
+                <Button size="sm" className="gap-1" onClick={onAddComponent}>
                     <PlusCircle className="h-4 w-4" />
                     Add Component
                 </Button>

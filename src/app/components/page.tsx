@@ -9,6 +9,7 @@ import Header from "@/components/dashboard/header";
 import ComponentTable from "@/components/dashboard/component-table";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/dashboard/sidebar";
+import { AddComponentDialog } from "@/components/add-component-dialog";
 
 export default function ComponentsPage() {
   const { toast } = useToast();
@@ -17,6 +18,7 @@ export default function ComponentsPage() {
   const [componentsData, setComponentsData] = React.useState<Component[]>(mockComponents);
   const [logsData, setLogsData] = React.useState<Log[]>(mockLogs);
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
 
   const user = mockUsers[userRole];
 
@@ -59,6 +61,22 @@ export default function ComponentsPage() {
     });
   };
 
+  const handleAddComponent = (newComponent: Omit<Component, 'id' | 'status' | 'imageUrl' | 'aiHint'>) => {
+    const componentToAdd: Component = {
+        ...newComponent,
+        id: (componentsData.length + 1).toString(),
+        status: "Available",
+        imageUrl: "https://placehold.co/100x100.png",
+        aiHint: `${newComponent.name.toLowerCase()} ${newComponent.category.toLowerCase()}`.trim(),
+    };
+    setComponentsData(prev => [componentToAdd, ...prev]);
+    toast({
+        title: "Component Added",
+        description: `${newComponent.name} has been successfully added to the inventory.`
+    });
+    setIsAddDialogOpen(false);
+  }
+
   const filteredComponents = React.useMemo(() => {
     return componentsData.filter(
       (component) =>
@@ -80,9 +98,19 @@ export default function ComponentsPage() {
             onSearch={setSearchTerm}
           />
           <main className="flex-1 p-4 md:p-6 lg:p-8">
-            <ComponentTable components={filteredComponents} user={user} onBorrow={handleBorrow} />
+            <ComponentTable 
+              components={filteredComponents} 
+              user={user} 
+              onBorrow={handleBorrow} 
+              onAddComponent={() => setIsAddDialogOpen(true)}
+            />
           </main>
         </div>
+        <AddComponentDialog 
+            open={isAddDialogOpen}
+            onOpenChange={setIsAddDialogOpen}
+            onAddComponent={handleAddComponent}
+        />
       </SidebarInset>
     </SidebarProvider>
   );
