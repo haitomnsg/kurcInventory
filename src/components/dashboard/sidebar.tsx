@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Gem, LayoutDashboard, Package, History, Users } from "lucide-react";
 import { User } from "@/lib/types";
@@ -21,16 +22,17 @@ export default function AppSidebar({ user }: AppSidebarProps) {
 
     return (
         <Sidebar>
-            <SidebarHeader>
-                <div className="flex items-center gap-2">
-                    <Gem className="h-6 w-6 text-primary" />
-                    <span className="text-lg font-semibold">KURC Inventory</span>
+            <SidebarHeader className="border-b">
+                <div className="flex items-center gap-3">
+                    <Gem className="h-7 w-7 text-primary" />
+                    <span className="text-xl font-semibold">KURC Inventory</span>
                 </div>
             </SidebarHeader>
-            <SidebarContent>
+            <SidebarContent className="p-4">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton 
+                            size="lg"
                             isActive={activeItem === "dashboard"}
                             onClick={() => setActiveItem("dashboard")}
                             tooltip="Dashboard"
@@ -41,6 +43,7 @@ export default function AppSidebar({ user }: AppSidebarProps) {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton 
+                            size="lg"
                             isActive={activeItem === "components"}
                             onClick={() => setActiveItem("components")}
                             tooltip="Components"
@@ -51,6 +54,7 @@ export default function AppSidebar({ user }: AppSidebarProps) {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton 
+                            size="lg"
                             isActive={activeItem === "logs"}
                             onClick={() => setActiveItem("logs")}
                             tooltip="Transaction Logs"
@@ -61,6 +65,7 @@ export default function AppSidebar({ user }: AppSidebarProps) {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton 
+                            size="lg"
                             isActive={activeItem === "accounts"}
                             onClick={() => setActiveItem("accounts")}
                             tooltip="Accounts"
