@@ -8,9 +8,8 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarFooter,
 } from "@/components/ui/sidebar";
-import { Gem, LayoutDashboard, Package, History, Users, LogOut, Settings } from "lucide-react";
+import { Gem, LayoutDashboard, Package, History, Users } from "lucide-react";
 import { User } from "@/lib/types";
 
 type AppSidebarProps = {
@@ -72,22 +71,6 @@ export default function AppSidebar({ user }: AppSidebarProps) {
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarContent>
-            <SidebarFooter>
-                 <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton>
-                            <Settings />
-                            Settings
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton>
-                            <LogOut />
-                            Logout
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                 </SidebarMenu>
-            </SidebarFooter>
         </Sidebar>
     )
 }
