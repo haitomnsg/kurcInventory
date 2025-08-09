@@ -4,7 +4,6 @@ import type { User } from "@/lib/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
@@ -15,7 +14,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Gem, LogOut, Moon, Search, Sun, User as UserIcon, Users } from "lucide-react";
+import { LogOut, Moon, Search, Sun, User as UserIcon, Users } from "lucide-react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 type HeaderProps = {
   user: User;
@@ -33,13 +33,13 @@ export default function Header({
   onSearch,
 }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
+        <SidebarTrigger className="md:hidden" />
         <div className="mr-4 hidden md:flex">
           <a className="flex items-center space-x-2" href="/">
-            <Gem className="h-6 w-6 text-primary" />
             <span className="hidden font-bold sm:inline-block">
-              KURC Inventory
+              Dashboard
             </span>
           </a>
         </div>
@@ -84,12 +84,12 @@ export default function Header({
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuGroup>
+                
                   <DropdownMenuItem>
                     <UserIcon className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
-                </DropdownMenuGroup>
+                
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup value={user.role} onValueChange={(value) => onRoleChange(value as "admin" | "member")}>
                   <DropdownMenuLabel>Role</DropdownMenuLabel>

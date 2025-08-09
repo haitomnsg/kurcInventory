@@ -9,7 +9,8 @@ import Header from "@/components/dashboard/header";
 import InventorySummary from "@/components/dashboard/inventory-summary";
 import RecentActivity from "@/components/dashboard/recent-activity";
 import ComponentTable from "@/components/dashboard/component-table";
-import { Button } from "@/components/ui/button";
+import { SidebarProvider, Sidebar, SidebarInset } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/dashboard/sidebar";
 
 export default function DashboardPage() {
   const { toast } = useToast();
@@ -69,26 +70,31 @@ export default function DashboardPage() {
   }, [componentsData, searchTerm]);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header
-        user={user}
-        onRoleChange={handleRoleChange}
-        onThemeChange={handleThemeChange}
-        theme={theme}
-        onSearch={setSearchTerm}
-      />
-      <main className="flex-1 p-4 md:p-6 lg:p-8">
-        <InventorySummary components={componentsData} />
-        
-        <div className="mt-8 grid gap-8 md:grid-cols-3">
-          <div className="md:col-span-2">
-            <ComponentTable components={filteredComponents} user={user} onBorrow={handleBorrow} />
-          </div>
-          <div className="md:col-span-1">
-            <RecentActivity logs={logsData} />
-          </div>
+    <SidebarProvider>
+      <AppSidebar user={user} />
+      <SidebarInset>
+        <div className="flex flex-col min-h-screen">
+          <Header
+            user={user}
+            onRoleChange={handleRoleChange}
+            onThemeChange={handleThemeChange}
+            theme={theme}
+            onSearch={setSearchTerm}
+          />
+          <main className="flex-1 p-4 md:p-6 lg:p-8">
+            <InventorySummary components={componentsData} />
+            
+            <div className="mt-8 grid gap-8 md:grid-cols-3">
+              <div className="md:col-span-2">
+                <ComponentTable components={filteredComponents} user={user} onBorrow={handleBorrow} />
+              </div>
+              <div className="md:col-span-1">
+                <RecentActivity logs={logsData} />
+              </div>
+            </div>
+          </main>
         </div>
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
