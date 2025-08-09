@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +20,7 @@ type AppSidebarProps = {
 };
 
 export default function AppSidebar({ user }: AppSidebarProps) {
-    const [activeItem, setActiveItem] = React.useState("dashboard");
+    const pathname = usePathname();
 
     return (
         <Sidebar>
@@ -28,35 +30,37 @@ export default function AppSidebar({ user }: AppSidebarProps) {
                     <span className="text-xl font-semibold">KURC Inventory</span>
                 </div>
             </SidebarHeader>
+            <SidebarSeparator />
             <SidebarContent className="p-4">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton 
-                            size="lg"
-                            isActive={activeItem === "dashboard"}
-                            onClick={() => setActiveItem("dashboard")}
-                            tooltip="Dashboard"
-                        >
-                            <LayoutDashboard />
-                            Dashboard
-                        </SidebarMenuButton>
+                        <Link href="/">
+                            <SidebarMenuButton 
+                                size="lg"
+                                isActive={pathname === "/"}
+                                tooltip="Dashboard"
+                            >
+                                <LayoutDashboard />
+                                Dashboard
+                            </SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                         <Link href="/components">
+                            <SidebarMenuButton 
+                                size="lg"
+                                isActive={pathname === "/components"}
+                                tooltip="Components"
+                            >
+                                <Package />
+                                Components
+                            </SidebarMenuButton>
+                        </Link>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton 
                             size="lg"
-                            isActive={activeItem === "components"}
-                            onClick={() => setActiveItem("components")}
-                            tooltip="Components"
-                        >
-                            <Package />
-                            Components
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton 
-                            size="lg"
-                            isActive={activeItem === "logs"}
-                            onClick={() => setActiveItem("logs")}
+                            isActive={pathname === "/logs"}
                             tooltip="Transaction Logs"
                         >
                             <History />
@@ -66,8 +70,7 @@ export default function AppSidebar({ user }: AppSidebarProps) {
                     <SidebarMenuItem>
                         <SidebarMenuButton 
                             size="lg"
-                            isActive={activeItem === "accounts"}
-                            onClick={() => setActiveItem("accounts")}
+                            isActive={pathname === "/accounts"}
                             tooltip="Accounts"
                         >
                             <Users />

@@ -6,13 +6,11 @@ import { mockComponents, mockLogs, mockUsers } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 
 import Header from "@/components/dashboard/header";
-import InventorySummary from "@/components/dashboard/inventory-summary";
-import RecentActivity from "@/components/dashboard/recent-activity";
+import ComponentTable from "@/components/dashboard/component-table";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/dashboard/sidebar";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
-export default function DashboardPage() {
+export default function ComponentsPage() {
   const { toast } = useToast();
   const [theme, setTheme] = React.useState("light");
   const [userRole, setUserRole] = React.useState<"admin" | "member">("member");
@@ -39,6 +37,36 @@ export default function DashboardPage() {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
+  const handleBorrow = (component: Component, details: { expectedReturnDate: Date; purpose: string }) => {
+    setComponentsData(prev =>
+      prev.map(c =>
+        c.id === component.id ? { ...c, status: "Borrowed", borrowedBy: user.name, expectedReturnDate: details.expectedReturnDate.toISOString().split('T')[0] } : c
+      )
+    );
+    setLogsData(prev => [
+      {
+        id: (prev.length + 1).toString(),
+        componentName: component.name,
+        userName: user.name,
+        action: "Borrowed",
+        timestamp: new Date().toISOString(),
+      },
+      ...prev,
+    ]);
+    toast({
+      title: "Component Borrowed",
+      description: `${component.name} has been successfully borrowed.`,
+    });
+  };
+
+  const filteredComponents = React.useMemo(() => {
+    return componentsData.filter(
+      (component) =>
+        component.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        component.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [componentsData, searchTerm]);
+
   return (
     <SidebarProvider>
       <AppSidebar user={user} />
@@ -52,13 +80,7 @@ export default function DashboardPage() {
             onSearch={setSearchTerm}
           />
           <main className="flex-1 p-4 md:p-6 lg:p-8">
-            <InventorySummary components={componentsData} />
-            
-            <div className="mt-8 grid gap-8 md:grid-cols-3">
-              <div className="md:col-span-3">
-                 <RecentActivity logs={logsData} />
-              </div>
-            </div>
+            <ComponentTable components={filteredComponents} user={user} onBorrow={handleBorrow} />
           </main>
         </div>
       </SidebarInset>
