@@ -66,14 +66,16 @@ export default function AppSidebar() {
                         </Link>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                        <SidebarMenuButton 
-                            size="lg"
-                            isActive={pathname === "/accounts"}
-                            tooltip="Accounts"
-                        >
-                            <Users />
-                            Accounts
-                        </SidebarMenuButton>
+                        <Link href="/account">
+                            <SidebarMenuButton 
+                                size="lg"
+                                isActive={pathname === "/account"}
+                                tooltip="Accounts"
+                            >
+                                <Users />
+                                Accounts
+                            </SidebarMenuButton>
+                        </Link>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarContent>
