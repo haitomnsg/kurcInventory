@@ -82,7 +82,7 @@ To get a local copy up and running, follow these simple steps.
     npm run dev
     ```
 
-    The application should now be running at [http://localhost:9002](http://localhost:9002).
+    The application should now be running at [http://localhost:9002](http://localhost:3000).
 
 ---
 
