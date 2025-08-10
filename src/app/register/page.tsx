@@ -7,6 +7,9 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { useToast } from "@/hooks/use-toast";
+import { addUser } from "@/lib/data-service";
 import { Gem } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +29,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+
 const registerSchema = z
   .object({
     name: z.string().min(1, "Name is required."),
@@ -42,6 +46,8 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = React.useState(false);
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -52,10 +58,39 @@ export default function RegisterPage() {
     },
   });
 
-  const onSubmit = (data: RegisterFormValues) => {
-    console.log("Registration submitted with:", data);
-    // For now, any registration attempt is successful and redirects to the login page.
-    router.push("/login");
+  const onSubmit = async (data: RegisterFormValues) => {
+    setIsLoading(true);
+    const auth = getAuth();
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
+      
+      await updateProfile(user, { displayName: data.name });
+
+      await addUser({
+          name: data.name,
+          email: data.email,
+          role: 'admin', // default role
+          avatar: `https://placehold.co/40x40.png?text=${data.name.charAt(0)}`,
+      });
+
+      toast({
+        title: "Registration Successful",
+        description: "Your account has been created. Please login.",
+      });
+
+      router.push("/login");
+
+    } catch (error: any) {
+        console.error("Registration failed:", error);
+        toast({
+            title: "Registration Failed",
+            description: error.message || "Could not create account. The email might already be in use.",
+            variant: "destructive"
+        })
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -126,8 +161,8 @@ export default function RegisterPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Create an account
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Creating account..." : "Create an account"}
               </Button>
             </form>
           </Form>
