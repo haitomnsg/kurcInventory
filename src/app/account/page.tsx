@@ -49,21 +49,26 @@ export default function AccountPage() {
         setTheme(theme === "light" ? "dark" : "light");
     };
 
+    const accountFormDefaultValues = React.useMemo(() => ({
+        name: user.name,
+        email: user.email,
+    }), [user]);
+
+    const passwordFormDefaultValues = React.useMemo(() => ({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+    }), []);
+
+
     const accountForm = useForm<AccountFormValues>({
         resolver: zodResolver(accountSchema),
-        defaultValues: {
-            name: user.name,
-            email: user.email,
-        }
+        defaultValues: accountFormDefaultValues
     });
 
     const passwordForm = useForm<PasswordFormValues>({
         resolver: zodResolver(passwordSchema),
-        defaultValues: {
-            currentPassword: "",
-            newPassword: "",
-            confirmPassword: "",
-        }
+        defaultValues: passwordFormDefaultValues,
     });
 
     const onAccountSubmit = (data: AccountFormValues) => {
