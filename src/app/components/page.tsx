@@ -139,10 +139,10 @@ export default function ComponentsPage() {
             onThemeChange={handleThemeChange}
             theme={theme}
           />
-          <main className="flex-1 p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
+          <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-8">
+            <div>
                 <ComponentTable 
-                  components={filteredComponents} 
+                  components={filteredComponents.slice(0, 10)} 
                   onBorrow={handleBorrow} 
                   onReturn={handleOpenReturnDialog}
                   onAddComponent={() => setIsAddDialogOpen(true)}
