@@ -83,21 +83,29 @@ export default function CategoryManager({ categories, onAdd, onUpdate, onDelete,
                     </TableRow>
                     </TableHeader>
                     <TableBody>
-                    {categories.map((category) => (
-                        <TableRow key={category.id}>
-                        <TableCell className="font-medium">{category.name}</TableCell>
-                        <TableCell className="flex gap-2">
-                            <Button variant="outline" size="icon" onClick={() => handleSelectForEdit(category)}>
-                                <Pencil className="h-4 w-4" />
-                                <span className="sr-only">Edit</span>
-                            </Button>
-                             <Button variant="destructive" size="icon" onClick={() => onDelete(category.id)}>
-                                <Trash2 className="h-4 w-4" />
-                                 <span className="sr-only">Delete</span>
-                            </Button>
-                        </TableCell>
-                        </TableRow>
-                    ))}
+                        {categories.length > 0 ? (
+                            categories.map((category) => (
+                                <TableRow key={category.id}>
+                                <TableCell className="font-medium">{category.name}</TableCell>
+                                <TableCell className="flex gap-2">
+                                    <Button variant="outline" size="icon" onClick={() => handleSelectForEdit(category)}>
+                                        <Pencil className="h-4 w-4" />
+                                        <span className="sr-only">Edit</span>
+                                    </Button>
+                                    <Button variant="destructive" size="icon" onClick={() => onDelete(category.id)}>
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Delete</span>
+                                    </Button>
+                                </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={2} className="h-24 text-center">
+                                    No categories found.
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </CardContent>

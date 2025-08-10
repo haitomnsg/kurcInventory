@@ -41,37 +41,45 @@ export default function ComponentTable({ components, onAddComponent, onEditCompo
           </TableRow>
         </TableHeader>
         <TableBody>
-          {components.map((component, index) => (
-            <TableRow key={component.id}>
-              {!minimal && <TableCell className="font-medium">{index + 1}</TableCell>}
-              <TableCell className="font-medium">{component.name}</TableCell>
-              {!minimal && <TableCell className="hidden md:table-cell">{component.category}</TableCell>}
-              <TableCell className="hidden md:table-cell text-right">{component.totalQuantity}</TableCell>
-              <TableCell className="text-right">
-                <Badge variant={component.availableQuantity > 0 ? "secondary" : "destructive"}>
-                  {component.availableQuantity}
-                </Badge>
-              </TableCell>
-              {!minimal && (
+          {components.length > 0 ? (
+            components.map((component, index) => (
+              <TableRow key={component.id}>
+                {!minimal && <TableCell className="font-medium">{index + 1}</TableCell>}
+                <TableCell className="font-medium">{component.name}</TableCell>
+                {!minimal && <TableCell className="hidden md:table-cell">{component.category}</TableCell>}
+                <TableCell className="hidden md:table-cell text-right">{component.totalQuantity}</TableCell>
                 <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                        {onEditComponent &&
-                            <Button variant="outline" size="icon" onClick={() => onEditComponent(component)}>
-                                <Pencil className="h-4 w-4" />
-                                <span className="sr-only">Edit</span>
-                            </Button>
-                        }
-                        {onDeleteComponent &&
-                            <Button variant="destructive" size="icon" onClick={() => onDeleteComponent(component)}>
-                                <Trash2 className="h-4 w-4" />
-                                <span className="sr-only">Delete</span>
-                            </Button>
-                        }
-                    </div>
+                  <Badge variant={component.availableQuantity > 0 ? "secondary" : "destructive"}>
+                    {component.availableQuantity}
+                  </Badge>
                 </TableCell>
-              )}
-            </TableRow>
-          ))}
+                {!minimal && (
+                  <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
+                          {onEditComponent &&
+                              <Button variant="outline" size="icon" onClick={() => onEditComponent(component)}>
+                                  <Pencil className="h-4 w-4" />
+                                  <span className="sr-only">Edit</span>
+                              </Button>
+                          }
+                          {onDeleteComponent &&
+                              <Button variant="destructive" size="icon" onClick={() => onDeleteComponent(component)}>
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="sr-only">Delete</span>
+                              </Button>
+                          }
+                      </div>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))
+          ) : (
+             <TableRow>
+                <TableCell colSpan={minimal ? 3 : 6} className="h-24 text-center">
+                    No components found.
+                </TableCell>
+             </TableRow>
+          )}
         </TableBody>
       </Table>
   )
