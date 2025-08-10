@@ -2,10 +2,12 @@
 "use client";
 
 import * as React from "react";
-import useSWR, { mutate } from 'swr';
+import useSWR from 'swr';
 import type { Component, Log } from "@/lib/types";
 import { fetchComponents, fetchLogs } from "@/lib/data-service";
 import { useToast } from "@/hooks/use-toast";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 import Header from "@/components/dashboard/header";
 import InventorySummary from "@/components/dashboard/inventory-summary";
@@ -22,9 +24,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function DashboardPage() {
   const { toast } = useToast();
   const [theme, setTheme] = React.useState("light");
+  const [user, setUser] = React.useState<User | null>(null);
 
   const { data: componentsData, error: componentsError } = useSWR<Component[]>('components', fetchComponents);
   const { data: logsData, error: logsError } = useSWR<Log[]>('logs', fetchLogs);
+
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   React.useEffect(() => {
     document.documentElement.classList.remove("light", "dark");
@@ -66,6 +76,7 @@ export default function DashboardPage() {
             <Header
               onThemeChange={handleThemeChange}
               theme={theme}
+              user={user}
             />
             <main className="flex-1 p-4 md:p-6 lg:p-8">
               {isLoading ? renderLoadingSkeleton() : (

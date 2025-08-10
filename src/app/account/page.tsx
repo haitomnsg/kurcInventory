@@ -2,12 +2,14 @@
 "use client";
 
 import * as React from "react";
-import type { User } from "@/lib/types";
-import { mockUsers } from "@/lib/data";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { onAuthStateChanged, reauthenticateWithCredential, EmailAuthProvider, updatePassword, updateProfile, type User } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 import Header from "@/components/dashboard/header";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -17,10 +19,11 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import AuthGuard from "@/components/auth-guard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const accountSchema = z.object({
     name: z.string().min(1, "Name is required."),
-    email: z.string().email("Invalid email address."),
+    email: z.string().email("Invalid email address.").optional(),
 });
 
 const passwordSchema = z.object({
@@ -39,7 +42,38 @@ type PasswordFormValues = z.infer<typeof passwordSchema>;
 export default function AccountPage() {
     const { toast } = useToast();
     const [theme, setTheme] = React.useState("light");
-    const user = mockUsers.admin;
+    const [user, setUser] = React.useState<User | null>(null);
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [isAccountSaving, setIsAccountSaving] = React.useState(false);
+    const [isPasswordSaving, setIsPasswordSaving] = React.useState(false);
+
+    const accountForm = useForm<AccountFormValues>({
+        resolver: zodResolver(accountSchema),
+    });
+
+    const passwordForm = useForm<PasswordFormValues>({
+        resolver: zodResolver(passwordSchema),
+        defaultValues: {
+            currentPassword: "",
+            newPassword: "",
+            confirmPassword: ""
+        }
+    });
+
+    React.useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                setUser(currentUser);
+                accountForm.reset({
+                    name: currentUser.displayName || "",
+                    email: currentUser.email || ""
+                });
+            }
+            setIsLoading(false);
+        });
+        return () => unsubscribe();
+    }, [accountForm]);
+
 
     React.useEffect(() => {
         document.documentElement.classList.remove("light", "dark");
@@ -49,39 +83,93 @@ export default function AccountPage() {
     const handleThemeChange = () => {
         setTheme(theme === "light" ? "dark" : "light");
     };
+    
+    const onAccountSubmit = async (data: AccountFormValues) => {
+        if (!user) return;
+        setIsAccountSaving(true);
+        try {
+            await updateProfile(user, { displayName: data.name });
 
-    const accountFormDefaultValues = React.useMemo(() => ({
-        name: user.name,
-        email: user.email,
-    }), [user]);
+            // Also update in our users collection if it exists
+            const userDocRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                await updateDoc(userDocRef, { name: data.name });
+            }
 
-    const passwordFormDefaultValues = React.useMemo(() => ({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-    }), []);
-
-
-    const accountForm = useForm<AccountFormValues>({
-        resolver: zodResolver(accountSchema),
-        defaultValues: accountFormDefaultValues
-    });
-
-    const passwordForm = useForm<PasswordFormValues>({
-        resolver: zodResolver(passwordSchema),
-        defaultValues: passwordFormDefaultValues,
-    });
-
-    const onAccountSubmit = (data: AccountFormValues) => {
-        console.log("Account updated:", data);
-        toast({ title: "Account Updated", description: "Your account details have been updated." });
+            toast({ title: "Account Updated", description: "Your account details have been updated." });
+        } catch (error: any) {
+            console.error("Account update error:", error);
+            toast({ title: "Error", description: "Failed to update account details.", variant: "destructive"});
+        } finally {
+            setIsAccountSaving(false);
+        }
     };
     
-    const onPasswordSubmit = (data: PasswordFormValues) => {
-        console.log("Password change requested:", data);
-        toast({ title: "Password Updated", description: "Your password has been changed successfully." });
-        passwordForm.reset();
+    const onPasswordSubmit = async (data: PasswordFormValues) => {
+        if (!user || !user.email) {
+            toast({ title: "Error", description: "No user is signed in.", variant: "destructive"});
+            return;
+        }
+
+        setIsPasswordSaving(true);
+        try {
+            const credential = EmailAuthProvider.credential(user.email, data.currentPassword);
+            await reauthenticateWithCredential(user, credential);
+            await updatePassword(user, data.newPassword);
+
+            toast({ title: "Password Updated", description: "Your password has been changed successfully." });
+            passwordForm.reset();
+        } catch (error: any) {
+            console.error("Password update error:", error);
+             toast({ title: "Error", description: error.code === 'auth/wrong-password' ? "Incorrect current password." : "Failed to update password.", variant: "destructive"});
+        } finally {
+            setIsPasswordSaving(false);
+        }
     };
+    
+    const renderLoadingSkeleton = () => (
+        <div className="grid gap-8 md:grid-cols-2">
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-7 w-48" />
+                    <Skeleton className="h-4 w-64" />
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <Skeleton className="h-10 w-32" />
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <Skeleton className="h-7 w-48" />
+                    <Skeleton className="h-4 w-64" />
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                     <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                     <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <Skeleton className="h-10 w-36" />
+                </CardContent>
+            </Card>
+        </div>
+    );
 
     return (
         <AuthGuard>
@@ -89,9 +177,10 @@ export default function AccountPage() {
                 <AppSidebar />
                 <SidebarInset>
                     <div className="flex flex-col min-h-screen">
-                        <Header onThemeChange={handleThemeChange} theme={theme} />
+                        <Header onThemeChange={handleThemeChange} theme={theme} user={user} />
                         <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-8">
-                            <div className="grid gap-8 md:grid-cols-2">
+                           { isLoading ? renderLoadingSkeleton() : (
+                             <div className="grid gap-8 md:grid-cols-2">
                                  <Card>
                                     <CardHeader>
                                         <CardTitle>Account Information</CardTitle>
@@ -117,12 +206,14 @@ export default function AccountPage() {
                                                     render={({ field }) => (
                                                         <FormItem>
                                                             <FormLabel>Email Address</FormLabel>
-                                                            <FormControl><Input type="email" {...field} /></FormControl>
+                                                            <FormControl><Input type="email" {...field} disabled /></FormControl>
                                                             <FormMessage />
                                                         </FormItem>
                                                     )}
                                                 />
-                                                <Button type="submit">Save Changes</Button>
+                                                <Button type="submit" disabled={isAccountSaving}>
+                                                    {isAccountSaving ? "Saving..." : "Save Changes"}
+                                                </Button>
                                             </form>
                                         </Form>
                                     </CardContent>
@@ -168,12 +259,15 @@ export default function AccountPage() {
                                                         </FormItem>
                                                     )}
                                                 />
-                                                <Button type="submit">Update Password</Button>
+                                                <Button type="submit" disabled={isPasswordSaving}>
+                                                     {isPasswordSaving ? "Updating..." : "Update Password"}
+                                                </Button>
                                             </form>
                                         </Form>
                                     </CardContent>
                                 </Card>
                             </div>
+                           )}
                         </main>
                     </div>
                 </SidebarInset>

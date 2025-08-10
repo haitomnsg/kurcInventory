@@ -82,7 +82,8 @@ export default function RegisterPage() {
       
       await updateProfile(user, { displayName: data.name });
 
-      await addUser({
+      // Pass UID to addUser
+      await addUser(user.uid, {
           name: data.name,
           email: data.email,
           role: 'admin', // default role

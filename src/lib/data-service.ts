@@ -1,6 +1,6 @@
 
 import { db } from './firebase';
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, limit, where } from 'firebase/firestore';
 import type { Component, Category, Log, User } from './types';
 
 // Collection references
@@ -31,6 +31,15 @@ export const fetchUsers = async (): Promise<User[]> => {
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
 };
 
+export const fetchUserByUid = async (uid: string): Promise<User | null> => {
+    const userDocRef = doc(db, "users", uid);
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+        return { id: userDoc.id, ...userDoc.data() } as User;
+    }
+    return null;
+}
+
 // Add operations
 export const addComponent = async (component: Omit<Component, 'id'>) => {
     return await addDoc(componentsCollection, component);
@@ -44,8 +53,9 @@ export const addLog = async (log: Omit<Log, 'id'>) => {
     return await addDoc(logsCollection, log);
 };
 
-export const addUser = async (user: Omit<User, 'id'>) => {
-    return await addDoc(usersCollection, user);
+export const addUser = async (uid: string, user: Omit<User, 'id'>) => {
+    const userDocRef = doc(db, 'users', uid);
+    return await setDoc(userDocRef, user);
 };
 
 
@@ -75,3 +85,6 @@ export const deleteCategory = async (id: string) => {
     const categoryDoc = doc(db, 'categories', id);
     return await deleteDoc(categoryDoc);
 };
+
+// This one needs to be imported from 'firebase/firestore'
+import { setDoc } from 'firebase/firestore';

@@ -6,6 +6,8 @@ import useSWR, { mutate } from 'swr';
 import type { Component, Log, User, Category } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { fetchComponents, fetchCategories, addComponent, updateComponent, deleteComponent, addCategory, updateCategory, deleteCategory } from "@/lib/data-service";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 
 import Header from "@/components/dashboard/header";
@@ -23,6 +25,7 @@ import AuthGuard from "@/components/auth-guard";
 export default function ComponentsPage() {
   const { toast } = useToast();
   const [theme, setTheme] = React.useState("light");
+  const [user, setUser] = React.useState<any>(null);
 
   const { data: componentsData, error: componentsError } = useSWR<Component[]>('components', fetchComponents);
   const { data: categoriesData, error: categoriesError } = useSWR<Category[]>('categories', fetchCategories);
@@ -33,6 +36,13 @@ export default function ComponentsPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [selectedComponent, setSelectedComponent] = React.useState<Component | null>(null);
+
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   React.useEffect(() => {
     document.documentElement.classList.remove("light", "dark");
@@ -200,6 +210,7 @@ export default function ComponentsPage() {
             <Header
               onThemeChange={handleThemeChange}
               theme={theme}
+              user={user}
             />
             <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-8">
               <div>
