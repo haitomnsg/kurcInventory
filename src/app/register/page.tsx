@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { getAuth, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile, onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { addUser } from "@/lib/data-service";
 import { Gem } from "lucide-react";
@@ -62,7 +63,6 @@ export default function RegisterPage() {
   });
 
   React.useEffect(() => {
-    const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
         if (user) {
             router.push('/');
@@ -76,7 +76,6 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
-    const auth = getAuth();
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user;

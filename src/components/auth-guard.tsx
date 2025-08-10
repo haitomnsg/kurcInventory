@@ -3,7 +3,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import AppSidebar from "./dashboard/sidebar";
 import Header from "./dashboard/header";
@@ -17,7 +18,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
 
     React.useEffect(() => {
-        const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 setIsAuthenticated(true);
