@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { type User } from "firebase/auth";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -27,10 +27,18 @@ type HeaderProps = {
   user: User | null;
 };
 
+const pageTitles: { [key: string]: string } = {
+    "/": "Dashboard",
+    "/components": "Components",
+    "/logs": "Transaction Logs",
+    "/account": "Account Settings",
+}
+
 export default function Header({
   user
 }: HeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { toast } = useToast();
 
   const handleLogout = async () => {
@@ -46,6 +54,7 @@ export default function Header({
 
   const userInitial = user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U";
   const userAvatar = user?.photoURL || `https://placehold.co/40x40.png?text=${userInitial}`;
+  const title = pageTitles[pathname] || "Dashboard";
 
   return (
     <header className="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -54,7 +63,7 @@ export default function Header({
         <div className="mr-4 hidden md:flex">
           <a className="flex items-center space-x-2" href="/">
             <span className="hidden font-bold sm:inline-block">
-              Dashboard
+              {title}
             </span>
           </a>
         </div>
