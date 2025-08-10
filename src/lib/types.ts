@@ -18,9 +18,10 @@ export type Log = {
   contactNumber?: string;
   quantity: number;
   status: 'Borrowed' | 'Returned';
-  timestamp: string;
-  purpose?: string;
+  issueDate: string;
+  returnDate?: string;
   expectedReturnDate?: string;
+  purpose?: string;
   remarks?: string;
 };
 

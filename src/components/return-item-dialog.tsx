@@ -42,7 +42,7 @@ type ReturnItemFormValues = z.infer<typeof returnItemSchema>;
 
 type ReturnItemDialogProps = {
   borrowedLogs: Log[];
-  onReturn: (log: Log, remarks: string) => void;
+  onReturn: (log: Log, returnDetails: { returnDate: Date, remarks: string }) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -60,7 +60,7 @@ export function ReturnItemDialog({ borrowedLogs, onReturn, open, onOpenChange }:
   const onSubmit = (data: ReturnItemFormValues) => {
     const logToReturn = borrowedLogs.find(log => log.id === data.logId);
     if (logToReturn) {
-        onReturn(logToReturn, data.remarks || "");
+        onReturn(logToReturn, { returnDate: data.returnDate, remarks: data.remarks || "" });
     }
     handleOpenChange(false);
   };

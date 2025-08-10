@@ -1,6 +1,6 @@
 
 import { db } from './firebase';
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, limit, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, limit, where, getDoc } from 'firebase/firestore';
 import type { Component, Category, Log, User } from './types';
 
 // Collection references
@@ -21,7 +21,7 @@ export const fetchCategories = async (): Promise<Category[]> => {
 };
 
 export const fetchLogs = async (): Promise<Log[]> => {
-    const q = query(logsCollection, orderBy('timestamp', 'desc'), limit(100));
+    const q = query(logsCollection, orderBy('issueDate', 'desc'), limit(100));
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Log));
 };
@@ -75,6 +75,11 @@ export const updateUser = async (id: string, data: Partial<User>) => {
     return await updateDoc(userDoc, data);
 };
 
+export const updateLog = async (id: string, data: Partial<Log>) => {
+    const logDoc = doc(db, 'logs', id);
+    return await updateDoc(logDoc, data);
+}
+
 // Delete operations
 export const deleteComponent = async (id: string) => {
     const componentDoc = doc(db, 'components', id);
@@ -85,6 +90,12 @@ export const deleteCategory = async (id: string) => {
     const categoryDoc = doc(db, 'categories', id);
     return await deleteDoc(categoryDoc);
 };
+
+export const deleteLog = async (id: string) => {
+    const logDoc = doc(db, 'logs', id);
+    return await deleteDoc(logDoc);
+}
+
 
 // This one needs to be imported from 'firebase/firestore'
 import { setDoc } from 'firebase/firestore';

@@ -4,7 +4,7 @@
 import * as React from "react";
 import useSWR, { mutate } from 'swr';
 import type { Log, Component } from "@/lib/types";
-import { fetchLogs, fetchComponents, addLog, updateComponent } from "@/lib/data-service";
+import { fetchLogs, fetchComponents, addLog, updateLog, deleteLog, updateComponent } from "@/lib/data-service";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { onAuthStateChanged, type User } from "firebase/auth";
@@ -18,9 +18,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, PlusCircle, MinusCircle } from "lucide-react";
+import { Search, PlusCircle, MinusCircle, Pencil, Trash2 } from "lucide-react";
 import { IssueItemDialog } from "@/components/issue-item-dialog";
 import { ReturnItemDialog } from "@/components/return-item-dialog";
+import { EditLogDialog } from "@/components/edit-log-dialog";
+import { DeleteLogDialog } from "@/components/delete-log-dialog";
 import { Separator } from "@/components/ui/separator";
 import AuthGuard from "@/components/auth-guard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,6 +39,10 @@ export default function LogsPage() {
   const [filter, setFilter] = React.useState<"all" | "borrowed" | "returned">("all");
   const [isIssueDialogOpen, setIsIssueDialogOpen] = React.useState(false);
   const [isReturnDialogOpen, setIsReturnDialogOpen] = React.useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [selectedLog, setSelectedLog] = React.useState<Log | null>(null);
+
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -54,6 +60,17 @@ export default function LogsPage() {
   const handleThemeChange = () => {
     setTheme(theme === "light" ? "dark" : "light");
   };
+
+  const handleOpenEditDialog = (log: Log) => {
+    setSelectedLog(log);
+    setIsEditDialogOpen(true);
+  }
+
+  const handleOpenDeleteDialog = (log: Log) => {
+    setSelectedLog(log);
+    setIsDeleteDialogOpen(true);
+  }
+
 
   const handleIssueItem = async (details: { componentId: string; userName: string; purpose: string; expectedReturnDate: Date; contactNumber: string; quantity: number }) => {
     const component = componentsData?.find(c => c.id === details.componentId);
@@ -76,7 +93,7 @@ export default function LogsPage() {
             contactNumber: details.contactNumber,
             quantity: details.quantity,
             status: "Borrowed",
-            timestamp: new Date().toISOString(),
+            issueDate: new Date().toISOString(),
             expectedReturnDate: details.expectedReturnDate.toISOString(),
             purpose: details.purpose,
         };
@@ -96,38 +113,72 @@ export default function LogsPage() {
     }
   }
 
-  const handleReturnItem = async (logToReturn: Log, remarks: string) => {
-    if (!logToReturn?.componentId) return;
+  const handleReturnItem = async (logToReturn: Log, returnDetails: { returnDate: Date, remarks: string }) => {
+    if (!logToReturn?.id || !logToReturn?.componentId) return;
+
     const component = componentsData?.find(c => c.id === logToReturn.componentId);
     if (!component || !component.id) return;
 
     try {
-        await updateComponent(component.id, { 
-            availableQuantity: component.availableQuantity + logToReturn.quantity,
-        });
-        
-        const newLog: Omit<Log, 'id'> = {
-            componentName: component.name,
-            componentId: component.id,
-            userName: logToReturn.userName,
-            quantity: logToReturn.quantity,
-            status: "Returned",
-            timestamp: new Date().toISOString(),
-            remarks: remarks
-        };
-        await addLog(newLog);
-        
-        mutate('components');
-        mutate('logs');
+      await updateComponent(component.id, {
+        availableQuantity: component.availableQuantity + logToReturn.quantity,
+      });
 
-        toast({
-            title: "Component Returned",
-            description: `${logToReturn.quantity} of ${component.name} has been returned.`,
-        });
-        setIsReturnDialogOpen(false);
+      await updateLog(logToReturn.id, {
+        status: 'Returned',
+        returnDate: returnDetails.returnDate.toISOString(),
+        remarks: returnDetails.remarks,
+      });
+
+      mutate('logs');
+      mutate('components');
+
+      toast({
+        title: "Component Returned",
+        description: `${logToReturn.quantity} of ${logToReturn.componentName} has been returned.`,
+      });
+      setIsReturnDialogOpen(false);
     } catch (error) {
-        console.error("Failed to return component:", error);
-        toast({ title: "Error", description: "Failed to return component.", variant: "destructive" });
+      console.error("Failed to return component:", error);
+      toast({ title: "Error", description: "Failed to return component.", variant: "destructive" });
+    }
+  }
+
+  const handleUpdateLog = async (logDetails: Partial<Log>) => {
+    if (!selectedLog || !selectedLog.id) return;
+    try {
+      await updateLog(selectedLog.id, logDetails);
+      mutate('logs');
+      toast({ title: "Log Updated", description: "The log entry has been successfully updated." });
+      setIsEditDialogOpen(false);
+      setSelectedLog(null);
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update log.", variant: "destructive" });
+    }
+  }
+
+  const handleDeleteLog = async () => {
+    if (!selectedLog || !selectedLog.id) return;
+    
+    // Revert inventory quantity if deleting a "Borrowed" log
+    if (selectedLog.status === 'Borrowed') {
+        const component = componentsData?.find(c => c.id === selectedLog.componentId);
+        if (component) {
+            await updateComponent(component.id, {
+                availableQuantity: component.availableQuantity + selectedLog.quantity
+            });
+        }
+    }
+
+    try {
+        await deleteLog(selectedLog.id);
+        mutate('logs');
+        mutate('components');
+        toast({ title: "Log Deleted", description: "The log entry has been successfully deleted." });
+        setIsDeleteDialogOpen(false);
+        setSelectedLog(null);
+    } catch (error) {
+        toast({ title: "Error", description: "Failed to delete log.", variant: "destructive" });
     }
   }
 
@@ -190,7 +241,7 @@ export default function LogsPage() {
                               <Button variant="outline" size="sm" onClick={() => setIsIssueDialogOpen(true)} disabled={isLoading}>
                                   <PlusCircle className="mr-2 h-4 w-4" /> Issue Item
                               </Button>
-                              <Button variant="outline" size="sm" onClick={() => setIsReturnDialogOpen(true)} disabled={isLoading}>
+                              <Button variant="outline" size="sm" onClick={() => setIsReturnDialogOpen(true)} disabled={isLoading || borrowedLogs.length === 0}>
                                   <MinusCircle className="mr-2 h-4 w-4" /> Return Item
                               </Button>
                           </div>
@@ -229,35 +280,50 @@ export default function LogsPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>S.N.</TableHead>
                           <TableHead>Component</TableHead>
-                           <TableHead>Quantity</TableHead>
                           <TableHead>User</TableHead>
+                          <TableHead>Qty</TableHead>
+                          <TableHead>Issue Date</TableHead>
+                          <TableHead>Return Date</TableHead>
                           <TableHead>Status</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Remarks</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {filteredLogs.length > 0 ? (
-                            filteredLogs.map((log) => (
+                            filteredLogs.map((log, index) => (
                                 <TableRow key={log.id}>
+                                <TableCell>{index + 1}</TableCell>
                                 <TableCell className="font-medium">{log.componentName}</TableCell>
-                                <TableCell>{log.quantity}</TableCell>
                                 <TableCell>{log.userName}</TableCell>
+                                <TableCell>{log.quantity}</TableCell>
+                                <TableCell>{format(new Date(log.issueDate), "PPP")}</TableCell>
+                                <TableCell>
+                                    {log.returnDate ? format(new Date(log.returnDate), "PPP") : "N/A"}
+                                </TableCell>
                                 <TableCell>
                                     <Badge variant={log.status === "Borrowed" ? "destructive" : "secondary"}>
                                     {log.status}
                                     </Badge>
                                 </TableCell>
-                                <TableCell>{format(new Date(log.timestamp), "PPP p")}</TableCell>
-                                <TableCell>
-                                    {log.remarks || "N/A"}
+                                <TableCell className="text-right">
+                                    <div className="flex gap-2 justify-end">
+                                        <Button variant="outline" size="icon" onClick={() => handleOpenEditDialog(log)}>
+                                            <Pencil className="h-4 w-4" />
+                                            <span className="sr-only">Edit</span>
+                                        </Button>
+                                        <Button variant="destructive" size="icon" onClick={() => handleOpenDeleteDialog(log)}>
+                                            <Trash2 className="h-4 w-4" />
+                                            <span className="sr-only">Delete</span>
+                                        </Button>
+                                    </div>
                                 </TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center h-24">
+                                <TableCell colSpan={8} className="text-center h-24">
                                     No records found.
                                 </TableCell>
                             </TableRow>
@@ -279,8 +345,31 @@ export default function LogsPage() {
               open={isReturnDialogOpen}
               onOpenChange={setIsReturnDialogOpen}
               borrowedLogs={borrowedLogs}
-              onReturn={(log, remarks) => handleReturnItem(log, remarks)}
+              onReturn={handleReturnItem}
           />
+          {selectedLog && (
+            <>
+                <EditLogDialog
+                    open={isEditDialogOpen}
+                    onOpenChange={(open) => {
+                        if (!open) setSelectedLog(null);
+                        setIsEditDialogOpen(open);
+                    }}
+                    onUpdateLog={handleUpdateLog}
+                    log={selectedLog}
+                    components={componentsData || []}
+                />
+                <DeleteLogDialog
+                    open={isDeleteDialogOpen}
+                    onOpenChange={(open) => {
+                        if (!open) setSelectedLog(null);
+                        setIsDeleteDialogOpen(open);
+                    }}
+                    onConfirmDelete={handleDeleteLog}
+                    logEntry={selectedLog}
+                />
+            </>
+          )}
         </SidebarInset>
       </SidebarProvider>
     </AuthGuard>
