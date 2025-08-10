@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Loader2, AlertCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Loader2, AlertCircle, Check, ChevronsUpDown } from "lucide-react";
 import type { Component } from "@/lib/types";
 import { borrowingSanityCheck } from "@/ai/flows/borrowing-sanity-check";
 import { Button } from "@/components/ui/button";
@@ -29,16 +29,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "./ui/command";
 
 
 const issueItemSchema = z.object({
   componentId: z.string().min(1, "Please select a component."),
+  quantity: z.coerce.number().min(1, "Quantity must be at least 1."),
   userName: z.string().min(1, "User name is required."),
+  contactNumber: z.string().min(1, "Contact number is required."),
   purpose: z.string().min(10, { message: "Please provide a more detailed purpose." }),
   expectedReturnDate: z.date({
     required_error: "An expected return date is required.",
@@ -62,7 +64,9 @@ export function IssueItemDialog({ components, onIssue, open, onOpenChange }: Iss
     resolver: zodResolver(issueItemSchema),
     defaultValues: {
       componentId: "",
+      quantity: 1,
       userName: "",
+      contactNumber: "",
       purpose: "",
     },
   });
@@ -124,24 +128,73 @@ export function IssueItemDialog({ components, onIssue, open, onOpenChange }: Iss
               control={form.control}
               name="componentId"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Component</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a component to issue" />
-                            </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                            {components.map(component => (
-                                <SelectItem key={component.id} value={component.id}>{component.name} ({component.quantity} available)</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value
+                            ? components.find(
+                                (component) => component.id === field.value
+                              )?.name
+                            : "Select a component"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search component..." />
+                        <CommandEmpty>No component found.</CommandEmpty>
+                        <CommandGroup>
+                          {components.map((component) => (
+                            <CommandItem
+                              value={component.name}
+                              key={component.id}
+                              onSelect={() => {
+                                form.setValue("componentId", component.id || "");
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  component.id === field.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {component.name} ({component.quantity} available)
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
             />
+             <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Quantity</FormLabel>
+                    <FormControl>
+                        <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
             <FormField
               control={form.control}
               name="userName"
@@ -150,6 +203,19 @@ export function IssueItemDialog({ components, onIssue, open, onOpenChange }: Iss
                   <FormLabel>Borrower's Name</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., John Doe" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="contactNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Borrower's Contact Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., 98xxxxxxxx" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -235,5 +301,3 @@ export function IssueItemDialog({ components, onIssue, open, onOpenChange }: Iss
     </Dialog>
   );
 }
-
-    
