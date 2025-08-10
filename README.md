@@ -90,7 +90,7 @@ To get a local copy up and running, follow these simple steps.
 
 A huge thanks to all the people who have contributed to this project:
 
-- **[Your Name]** - Project Lead & Developer
+- **Ashish Gupta** - Project Lead & Developer
   <!-- Add more contributors here -->
 
 ---
