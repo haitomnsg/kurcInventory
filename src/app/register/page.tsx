@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Gem } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -58,7 +59,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted-background p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-muted-background p-4">
+       <div className="flex items-center gap-3 mb-8">
+          <Gem className="h-8 w-8 text-primary" />
+          <span className="text-2xl font-semibold">KURC Inventory</span>
+      </div>
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Sign Up</CardTitle>
