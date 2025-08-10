@@ -48,6 +48,9 @@ type ReturnItemDialogProps = {
 };
 
 export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: ReturnItemDialogProps) {
+  const [isBorrowerPopoverOpen, setIsBorrowerPopoverOpen] = React.useState(false);
+  const [isComponentPopoverOpen, setIsComponentPopoverOpen] = React.useState(false);
+
   const form = useForm<ReturnItemFormValues>({
     resolver: zodResolver(returnItemSchema),
     defaultValues: {
@@ -109,7 +112,7 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Borrower's Name</FormLabel>
-                  <Popover>
+                  <Popover open={isBorrowerPopoverOpen} onOpenChange={setIsBorrowerPopoverOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -131,7 +134,10 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
                             <CommandItem
                               value={borrower}
                               key={borrower}
-                              onSelect={() => form.setValue("borrowerName", borrower)}
+                              onSelect={() => {
+                                form.setValue("borrowerName", borrower);
+                                setIsBorrowerPopoverOpen(false);
+                              }}
                             >
                               <Check className={cn("mr-2 h-4 w-4", borrower === field.value ? "opacity-100" : "opacity-0")} />
                               {borrower}
@@ -153,7 +159,7 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Component</FormLabel>
-                    <Popover>
+                    <Popover open={isComponentPopoverOpen} onOpenChange={setIsComponentPopoverOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -176,7 +182,10 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
                               <CommandItem
                                 value={component.name}
                                 key={component.id}
-                                onSelect={() => form.setValue("componentId", component.id || "")}
+                                onSelect={() => {
+                                  form.setValue("componentId", component.id || "");
+                                  setIsComponentPopoverOpen(false);
+                                }}
                               >
                                 <Check className={cn("mr-2 h-4 w-4", component.id === field.value ? "opacity-100" : "opacity-0")} />
                                 {component.name}

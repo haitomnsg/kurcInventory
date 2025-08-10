@@ -59,6 +59,8 @@ type IssueItemDialogProps = {
 export function IssueItemDialog({ components, onIssue, open, onOpenChange }: IssueItemDialogProps) {
     const [isChecking, setIsChecking] = React.useState(false);
     const [aiWarning, setAiWarning] = React.useState<string | null>(null);
+    const [isComponentPopoverOpen, setIsComponentPopoverOpen] = React.useState(false);
+
 
   const form = useForm<IssueItemFormValues>({
     resolver: zodResolver(issueItemSchema),
@@ -130,7 +132,7 @@ export function IssueItemDialog({ components, onIssue, open, onOpenChange }: Iss
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Component</FormLabel>
-                  <Popover>
+                  <Popover open={isComponentPopoverOpen} onOpenChange={setIsComponentPopoverOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -161,6 +163,7 @@ export function IssueItemDialog({ components, onIssue, open, onOpenChange }: Iss
                               key={component.id}
                               onSelect={() => {
                                 form.setValue("componentId", component.id || "");
+                                setIsComponentPopoverOpen(false);
                               }}
                             >
                               <Check
