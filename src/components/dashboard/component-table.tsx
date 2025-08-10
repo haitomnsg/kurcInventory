@@ -57,9 +57,7 @@ export default function ComponentTable({ components, onBorrow, onReturn, onAddCo
      <Table>
         <TableHeader>
           <TableRow>
-            {!minimal && <TableHead className="hidden w-[100px] sm:table-cell">
-              <span className="sr-only">Image</span>
-            </TableHead>}
+            {!minimal && <TableHead className="w-[50px]">S.N.</TableHead>}
             <TableHead>Name</TableHead>
             <TableHead>Status</TableHead>
             {!minimal && <TableHead className="hidden md:table-cell">Category</TableHead>}
@@ -70,18 +68,9 @@ export default function ComponentTable({ components, onBorrow, onReturn, onAddCo
           </TableRow>
         </TableHeader>
         <TableBody>
-          {components.map((component) => (
+          {components.map((component, index) => (
             <TableRow key={component.id}>
-              {!minimal && <TableCell className="hidden sm:table-cell">
-                <Image
-                  alt={component.name}
-                  className="aspect-square rounded-md object-cover"
-                  height="64"
-                  src={component.imageUrl}
-                  width="64"
-                  data-ai-hint={component.aiHint}
-                />
-              </TableCell>}
+              {!minimal && <TableCell className="font-medium">{index + 1}</TableCell>}
               <TableCell className="font-medium">{component.name}</TableCell>
               <TableCell>
                 <Badge variant={component.status === 'Available' ? 'outline' : 'destructive'} className="flex items-center gap-1 w-fit">
