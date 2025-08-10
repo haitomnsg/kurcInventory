@@ -4,9 +4,8 @@
 import * as React from "react";
 import useSWR, { mutate } from 'swr';
 import type { Component, Log, User, Category } from "@/lib/types";
-import { mockUsers } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { fetchComponents, fetchCategories, addComponent, addCategory, updateCategory, deleteCategory } from "@/lib/data-service";
+import { fetchComponents, fetchCategories, addComponent, updateComponent, deleteComponent, addCategory, updateCategory, deleteCategory } from "@/lib/data-service";
 
 
 import Header from "@/components/dashboard/header";
@@ -14,8 +13,9 @@ import ComponentTable from "@/components/dashboard/component-table";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/dashboard/sidebar";
 import { AddComponentDialog } from "@/components/add-component-dialog";
+import { EditComponentDialog } from "@/components/edit-component-dialog";
+import { DeleteComponentDialog } from "@/components/delete-component-dialog";
 import CategoryManager from "@/components/dashboard/category-manager";
-import { ReturnItemDialog } from "@/components/return-item-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import AuthGuard from "@/components/auth-guard";
@@ -30,7 +30,8 @@ export default function ComponentsPage() {
   const [componentSearchTerm, setComponentSearchTerm] = React.useState("");
   const [categorySearchTerm, setCategorySearchTerm] = React.useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
-  const [isReturnDialogOpen, setIsReturnDialogOpen] = React.useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [selectedComponent, setSelectedComponent] = React.useState<Component | null>(null);
 
   React.useEffect(() => {
@@ -42,24 +43,14 @@ export default function ComponentsPage() {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
-  const handleBorrow = (component: Component, details: { expectedReturnDate: Date; purpose: string }) => {
-    // This needs to be implemented with Firestore updates
-    console.log("Borrowing component:", component, "with details:", details);
-    toast({
-      title: "Component Borrowed",
-      description: `${component.name} has been successfully borrowed.`,
-    });
-  };
-  
-  const handleReturn = (component: Component, remarks: string) => {
-    // This needs to be implemented with Firestore updates
-     console.log("Returning component:", component, "with remarks:", remarks);
-    toast({
-      title: "Component Returned",
-      description: `${component.name} has been returned.`,
-    });
-    setIsReturnDialogOpen(false);
-    setSelectedComponent(null);
+  const handleOpenEditDialog = (component: Component) => {
+    setSelectedComponent(component);
+    setIsEditDialogOpen(true);
+  }
+
+  const handleOpenDeleteDialog = (component: Component) => {
+    setSelectedComponent(component);
+    setIsDeleteDialogOpen(true);
   }
 
   const handleAddComponent = async (newComponent: Omit<Component, 'id' | 'status' | 'aiHint'>) => {
@@ -84,6 +75,47 @@ export default function ComponentsPage() {
         });
     }
   }
+
+  const handleUpdateComponent = async (componentToUpdate: Omit<Component, 'id' | 'status' | 'aiHint'>) => {
+    if (!selectedComponent?.id) return;
+    try {
+        await updateComponent(selectedComponent.id, componentToUpdate);
+        mutate('components');
+        toast({
+            title: "Component Updated",
+            description: `${componentToUpdate.name} has been successfully updated.`
+        });
+        setIsEditDialogOpen(false);
+        setSelectedComponent(null);
+    } catch (error) {
+        toast({
+            title: "Error",
+            description: "Failed to update component.",
+            variant: "destructive"
+        });
+    }
+  }
+
+  const handleDeleteComponent = async () => {
+      if (!selectedComponent?.id) return;
+      try {
+          await deleteComponent(selectedComponent.id);
+          mutate('components');
+          toast({
+              title: "Component Deleted",
+              description: `${selectedComponent.name} has been successfully deleted.`
+          });
+          setIsDeleteDialogOpen(false);
+          setSelectedComponent(null);
+      } catch (error) {
+          toast({
+              title: "Error",
+              description: "Failed to delete component.",
+              variant: "destructive"
+          });
+      }
+  }
+
 
   const handleAddCategory = async (name: string) => {
     try {
@@ -131,11 +163,6 @@ export default function ComponentsPage() {
     );
   }, [categoriesData, categorySearchTerm]);
   
-  const handleOpenReturnDialog = (component: Component) => {
-    setSelectedComponent(component);
-    setIsReturnDialogOpen(true);
-  }
-
   const renderLoadingSkeleton = () => (
     <Card>
         <CardContent className="p-6">
@@ -174,8 +201,10 @@ export default function ComponentsPage() {
               <div>
                   {!componentsData ? renderLoadingSkeleton() : (
                       <ComponentTable 
-                        components={filteredComponents.slice(0, 10)} 
+                        components={filteredComponents} 
                         onAddComponent={() => setIsAddDialogOpen(true)}
+                        onEditComponent={handleOpenEditDialog}
+                        onDeleteComponent={handleOpenDeleteDialog}
                         onSearch={setComponentSearchTerm}
                       />
                   )}
@@ -199,24 +228,28 @@ export default function ComponentsPage() {
               onAddComponent={handleAddComponent}
               categories={categoriesData || []}
           />
-          {selectedComponent && componentsData && (
-              <ReturnItemDialog
-                  open={isReturnDialogOpen}
+          {selectedComponent && (
+            <>
+              <EditComponentDialog
+                  open={isEditDialogOpen}
                   onOpenChange={(open) => {
-                      if (!open) {
-                          setSelectedComponent(null);
-                      }
-                      setIsReturnDialogOpen(open);
+                      if (!open) setSelectedComponent(null);
+                      setIsEditDialogOpen(open);
                   }}
-                  components={componentsData.filter(c => c.status === 'Borrowed')}
-                  onReturn={(componentId, remarks) => {
-                      const componentToReturn = componentsData.find(c => c.id === componentId);
-                      if (componentToReturn) {
-                          handleReturn(componentToReturn, remarks);
-                      }
-                  }}
-                  selectedComponentId={selectedComponent.id}
+                  onEditComponent={handleUpdateComponent}
+                  component={selectedComponent}
+                  categories={categoriesData || []}
               />
+              <DeleteComponentDialog
+                  open={isDeleteDialogOpen}
+                  onOpenChange={(open) => {
+                      if (!open) setSelectedComponent(null);
+                      setIsDeleteDialogOpen(open);
+                  }}
+                  onConfirmDelete={handleDeleteComponent}
+                  componentName={selectedComponent.name}
+              />
+            </>
           )}
         </SidebarInset>
       </SidebarProvider>

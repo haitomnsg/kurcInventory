@@ -2,8 +2,9 @@
 "use client";
 
 import * as React from "react";
+import useSWR, { mutate } from 'swr';
 import type { Component, Log } from "@/lib/types";
-import { mockComponents, mockLogs, mockUsers } from "@/lib/data";
+import { fetchComponents, fetchLogs } from "@/lib/data-service";
 import { useToast } from "@/hooks/use-toast";
 
 import Header from "@/components/dashboard/header";
@@ -16,14 +17,14 @@ import ComponentTable from "@/components/dashboard/component-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import AuthGuard from "@/components/auth-guard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
   const { toast } = useToast();
   const [theme, setTheme] = React.useState("light");
-  const [componentsData, setComponentsData] = React.useState<Component[]>(mockComponents);
-  const [logsData, setLogsData] = React.useState<Log[]>(mockLogs);
 
-  const user = mockUsers.admin;
+  const { data: componentsData, error: componentsError } = useSWR<Component[]>('components', fetchComponents);
+  const { data: logsData, error: logsError } = useSWR<Log[]>('logs', fetchLogs);
 
   React.useEffect(() => {
     document.documentElement.classList.remove("light", "dark");
@@ -33,28 +34,22 @@ export default function DashboardPage() {
   const handleThemeChange = () => {
     setTheme(theme === "light" ? "dark" : "light");
   };
+  
+  const isLoading = (!componentsData && !componentsError) || (!logsData && !logsError);
 
-  const handleBorrow = (component: Component, details: { expectedReturnDate: Date; purpose: string }) => {
-    setComponentsData(prev =>
-      prev.map(c =>
-        c.id === component.id ? { ...c, status: "Borrowed", borrowedBy: user.name, expectedReturnDate: details.expectedReturnDate.toISOString().split('T')[0] } : c
-      )
-    );
-    setLogsData(prev => [
-      {
-        id: (prev.length + 1).toString(),
-        componentName: component.name,
-        userName: user.name,
-        status: "Borrowed",
-        timestamp: new Date().toISOString(),
-      },
-      ...prev,
-    ]);
-    toast({
-      title: "Component Borrowed",
-      description: `${component.name} has been successfully borrowed.`,
-    });
-  };
+  const renderLoadingSkeleton = () => (
+    <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+        </div>
+        <div className="grid gap-8 md:grid-cols-2">
+            <Skeleton className="h-96" />
+            <Skeleton className="h-96" />
+        </div>
+    </div>
+  )
 
   return (
     <AuthGuard>
@@ -67,40 +62,44 @@ export default function DashboardPage() {
               theme={theme}
             />
             <main className="flex-1 p-4 md:p-6 lg:p-8">
-              <InventorySummary components={componentsData} />
-              
-              <div className="mt-8 grid gap-8 md:grid-cols-2">
-                  <Card>
-                      <CardHeader className="flex flex-row items-center justify-between">
-                          <div>
-                              <CardTitle>Recent Activity</CardTitle>
-                              <CardDescription>A log of the last 5 component borrows and returns.</CardDescription>
-                          </div>
-                           <Link href="/logs">
-                              <Button variant="outline" size="sm">View all</Button>
-                          </Link>
-                      </CardHeader>
-                      <CardContent>
-                          <RecentActivity logs={logsData.slice(0,5)} />
-                      </CardContent>
-                  </Card>
-                  <Card>
-                      <CardHeader className="flex flex-row items-center justify-between">
-                          <div>
-                              <CardTitle>Inventory Overview</CardTitle>
-                              <CardDescription>Top 5 components in the inventory.</CardDescription>
-                          </div>
-                          <Link href="/components">
-                              <Button variant="outline" size="sm">
-                                  View all
-                              </Button>
-                          </Link>
-                      </CardHeader>
-                      <CardContent>
-                          <ComponentTable components={componentsData.slice(0,5)} onBorrow={handleBorrow} minimal />
-                      </CardContent>
-                  </Card>
-              </div>
+              {isLoading ? renderLoadingSkeleton() : (
+                <>
+                    <InventorySummary components={componentsData || []} />
+                    
+                    <div className="mt-8 grid gap-8 md:grid-cols-2">
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <div>
+                                    <CardTitle>Recent Activity</CardTitle>
+                                    <CardDescription>A log of the last 5 component borrows and returns.</CardDescription>
+                                </div>
+                                <Link href="/logs">
+                                    <Button variant="outline" size="sm">View all</Button>
+                                </Link>
+                            </CardHeader>
+                            <CardContent>
+                                <RecentActivity logs={(logsData || []).slice(0,5)} />
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <div>
+                                    <CardTitle>Inventory Overview</CardTitle>
+                                    <CardDescription>Top 5 available components in the inventory.</CardDescription>
+                                </div>
+                                <Link href="/components">
+                                    <Button variant="outline" size="sm">
+                                        View all
+                                    </Button>
+                                </Link>
+                            </CardHeader>
+                            <CardContent>
+                                <ComponentTable components={(componentsData || []).filter(c => c.status === 'Available').slice(0,5)} minimal />
+                            </CardContent>
+                        </Card>
+                    </div>
+                </>
+              )}
             </main>
           </div>
         </SidebarInset>

@@ -3,7 +3,6 @@
 
 import * as React from "react";
 import type { Component } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -15,32 +14,19 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PlusCircle, Pencil, Trash2, Search } from "lucide-react";
-import { BorrowDialog } from "../borrow-dialog";
 import { Input } from "../ui/input";
 
 type ComponentTableProps = {
   components: Component[];
-  onBorrow: (component: Component, details: { expectedReturnDate: Date; purpose:string }) => void;
-  onReturn?: (component: Component) => void;
   onAddComponent?: () => void;
+  onEditComponent?: (component: Component) => void;
+  onDeleteComponent?: (component: Component) => void;
   onSearch?: (term: string) => void;
   minimal?: boolean;
 };
 
-export default function ComponentTable({ components, onBorrow, onReturn, onAddComponent, onSearch, minimal = false }: ComponentTableProps) {
-  const [isBorrowDialogOpen, setIsBorrowDialogOpen] = React.useState(false);
-  const [selectedComponent, setSelectedComponent] = React.useState<Component | null>(null);
-
-  const handleBorrowClick = (component: Component) => {
-    setSelectedComponent(component);
-    setIsBorrowDialogOpen(true);
-  };
+export default function ComponentTable({ components, onAddComponent, onEditComponent, onDeleteComponent, onSearch, minimal = false }: ComponentTableProps) {
   
-  const handleDialogClose = () => {
-    setIsBorrowDialogOpen(false);
-    setSelectedComponent(null);
-  }
-
   const tableContent = (
      <Table>
         <TableHeader>
@@ -49,7 +35,7 @@ export default function ComponentTable({ components, onBorrow, onReturn, onAddCo
             <TableHead>Name</TableHead>
             {!minimal && <TableHead className="hidden md:table-cell">Category</TableHead>}
             {!minimal && <TableHead className="hidden md:table-cell">Quantity</TableHead>}
-            <TableHead className="w-[120px]">Actions</TableHead>
+            <TableHead className="text-right w-[120px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -59,15 +45,21 @@ export default function ComponentTable({ components, onBorrow, onReturn, onAddCo
               <TableCell className="font-medium">{component.name}</TableCell>
               {!minimal && <TableCell className="hidden md:table-cell">{component.category}</TableCell>}
               {!minimal && <TableCell className="hidden md:table-cell">{component.quantity}</TableCell>}
-              <TableCell className="flex gap-2">
-                <Button variant="outline" size="icon">
-                  <Pencil className="h-4 w-4" />
-                  <span className="sr-only">Edit</span>
-                </Button>
-                <Button variant="destructive" size="icon">
-                  <Trash2 className="h-4 w-4" />
-                  <span className="sr-only">Delete</span>
-                </Button>
+              <TableCell className="text-right">
+                <div className="flex gap-2 justify-end">
+                    {onEditComponent &&
+                        <Button variant="outline" size="icon" onClick={() => onEditComponent(component)}>
+                            <Pencil className="h-4 w-4" />
+                            <span className="sr-only">Edit</span>
+                        </Button>
+                    }
+                    {onDeleteComponent &&
+                        <Button variant="destructive" size="icon" onClick={() => onDeleteComponent(component)}>
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                        </Button>
+                    }
+                </div>
               </TableCell>
             </TableRow>
           ))}
@@ -76,22 +68,7 @@ export default function ComponentTable({ components, onBorrow, onReturn, onAddCo
   )
 
   if (minimal) {
-    return (
-        <div>
-            {tableContent}
-            {selectedComponent && (
-                <BorrowDialog
-                    open={isBorrowDialogOpen}
-                    onOpenChange={handleDialogClose}
-                    component={selectedComponent}
-                    onBorrow={(details) => {
-                        onBorrow(selectedComponent, details);
-                        handleDialogClose();
-                    }}
-                />
-            )}
-        </div>
-    )
+    return <div>{tableContent}</div>
   }
 
   return (
@@ -130,17 +107,6 @@ export default function ComponentTable({ components, onBorrow, onReturn, onAddCo
        {tableContent}
       </CardContent>
       </Card>
-      {selectedComponent && (
-        <BorrowDialog
-            open={isBorrowDialogOpen}
-            onOpenChange={handleDialogClose}
-            component={selectedComponent}
-            onBorrow={(details) => {
-                onBorrow(selectedComponent, details);
-                handleDialogClose();
-            }}
-        />
-      )}
     </>
   );
 }
