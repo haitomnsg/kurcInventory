@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { Component } from "@/lib/types";
@@ -25,11 +25,12 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "./ui/command";
 import { Calendar } from "./ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+
 
 const returnItemSchema = z.object({
   borrowerName: z.string().min(1, "Please select a borrower."),
@@ -48,9 +49,6 @@ type ReturnItemDialogProps = {
 };
 
 export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: ReturnItemDialogProps) {
-  const [isBorrowerPopoverOpen, setIsBorrowerPopoverOpen] = React.useState(false);
-  const [isComponentPopoverOpen, setIsComponentPopoverOpen] = React.useState(false);
-
   const form = useForm<ReturnItemFormValues>({
     resolver: zodResolver(returnItemSchema),
     defaultValues: {
@@ -110,43 +108,20 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
               control={form.control}
               name="borrowerName"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>Borrower's Name</FormLabel>
-                  <Popover open={isBorrowerPopoverOpen} onOpenChange={setIsBorrowerPopoverOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
-                        >
-                          {field.value || "Select a borrower"}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command>
-                        <CommandInput placeholder="Search borrower..." />
-                        <CommandEmpty>No borrower found.</CommandEmpty>
-                        <CommandGroup>
-                          {borrowers.map((borrower) => (
-                            <CommandItem
-                              value={borrower}
-                              key={borrower}
-                              onSelect={(currentValue) => {
-                                form.setValue("borrowerName", currentValue === field.value ? "" : currentValue);
-                                setIsBorrowerPopoverOpen(false);
-                              }}
-                            >
-                              <Check className={cn("mr-2 h-4 w-4", borrower === field.value ? "opacity-100" : "opacity-0")} />
-                              {borrower}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a borrower" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            {borrowers.map((borrower) => (
+                                <SelectItem key={borrower} value={borrower}>{borrower}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -157,49 +132,24 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
                 control={form.control}
                 name="componentId"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Component</FormLabel>
-                    <Popover open={isComponentPopoverOpen} onOpenChange={setIsComponentPopoverOpen}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
-                            disabled={!componentsForBorrower.length}
-                          >
-                            {field.value ? components.find(c => c.id === field.value)?.name : "Select a component"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                        <Command>
-                          <CommandInput placeholder="Search component..." />
-                          <CommandEmpty>No component found for this borrower.</CommandEmpty>
-                          <CommandGroup>
-                            {componentsForBorrower.map((component) => (
-                              <CommandItem
-                                value={component.name}
-                                key={component.id}
-                                onSelect={(currentValue) => {
-                                   const selectedComponent = componentsForBorrower.find(c => c.name.toLowerCase() === currentValue.toLowerCase());
-                                    if (selectedComponent && selectedComponent.id) {
-                                      form.setValue("componentId", selectedComponent.id);
-                                    }
-                                  setIsComponentPopoverOpen(false);
-                                }}
-                              >
-                                <Check className={cn("mr-2 h-4 w-4", component.id === field.value ? "opacity-100" : "opacity-0")} />
-                                {component.name}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
+                   <FormItem>
+                        <FormLabel>Component</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!componentsForBorrower.length}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a component" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {componentsForBorrower.map((component) => (
+                                    <SelectItem key={component.id} value={component.id!}>
+                                        {component.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
                 )}
               />
             )}
