@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Pencil, Trash2, Search } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,15 +24,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { BorrowDialog } from "../borrow-dialog";
+import { Input } from "../ui/input";
 
 type ComponentTableProps = {
   components: Component[];
   onBorrow: (component: Component, details: { expectedReturnDate: Date; purpose:string }) => void;
   onAddComponent?: () => void;
+  onSearch?: (term: string) => void;
   minimal?: boolean;
 };
 
-export default function ComponentTable({ components, onBorrow, onAddComponent, minimal = false }: ComponentTableProps) {
+export default function ComponentTable({ components, onBorrow, onAddComponent, onSearch, minimal = false }: ComponentTableProps) {
   const [isBorrowDialogOpen, setIsBorrowDialogOpen] = React.useState(false);
   const [selectedComponent, setSelectedComponent] = React.useState<Component | null>(null);
 
@@ -129,19 +131,34 @@ export default function ComponentTable({ components, onBorrow, onAddComponent, m
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-            <CardTitle>Inventory</CardTitle>
-            <CardDescription>
-            Browse and manage all available components.
-            </CardDescription>
+      <CardHeader>
+        <div className="flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row">
+            <div>
+                <CardTitle>Inventory</CardTitle>
+                <CardDescription>
+                Browse and manage all available components.
+                </CardDescription>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+                {onSearch && (
+                    <div className="relative w-full sm:w-auto">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="search"
+                            placeholder="Search components..."
+                            className="w-full bg-background pl-9"
+                            onChange={(e) => onSearch(e.target.value)}
+                        />
+                    </div>
+                )}
+                {onAddComponent && (
+                    <Button size="sm" className="gap-1" onClick={onAddComponent}>
+                        <PlusCircle className="h-4 w-4" />
+                        Add Component
+                    </Button>
+                )}
+            </div>
         </div>
-        {onAddComponent && (
-            <Button size="sm" className="gap-1" onClick={onAddComponent}>
-                <PlusCircle className="h-4 w-4" />
-                Add Component
-            </Button>
-        )}
       </CardHeader>
       <CardContent>
        {tableContent}

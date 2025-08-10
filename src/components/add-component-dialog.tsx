@@ -5,7 +5,7 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import type { Component } from "@/lib/types";
+import type { Component, Category } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,9 +41,10 @@ type AddComponentDialogProps = {
   onAddComponent: (data: AddComponentFormValues) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  categories: Category[];
 };
 
-export function AddComponentDialog({ onAddComponent, open, onOpenChange }: AddComponentDialogProps) {
+export function AddComponentDialog({ onAddComponent, open, onOpenChange, categories }: AddComponentDialogProps) {
   const form = useForm<AddComponentFormValues>({
     resolver: zodResolver(addComponentSchema),
     defaultValues: {
@@ -88,17 +89,26 @@ export function AddComponentDialog({ onAddComponent, open, onOpenChange }: AddCo
             />
             <div className="grid grid-cols-2 gap-4">
                 <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <FormControl>
-                        <Input placeholder="e.g., Microcontroller" {...field} />
-                    </FormControl>
-                    <FormMessage />
+                      <FormLabel>Category</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {categories.map(category => (
+                                    <SelectItem key={category.id} value={category.name}>{category.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                      <FormMessage />
                     </FormItem>
-                )}
+                  )}
                 />
                 <FormField
                 control={form.control}

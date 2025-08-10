@@ -2,8 +2,8 @@
 "use client";
 
 import * as React from "react";
-import type { Component, Log, User } from "@/lib/types";
-import { mockComponents, mockLogs, mockUsers } from "@/lib/data";
+import type { Component, Log, User, Category } from "@/lib/types";
+import { mockComponents, mockLogs, mockUsers, mockCategories } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 
 import Header from "@/components/dashboard/header";
@@ -11,13 +11,16 @@ import ComponentTable from "@/components/dashboard/component-table";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/dashboard/sidebar";
 import { AddComponentDialog } from "@/components/add-component-dialog";
+import CategoryManager from "@/components/dashboard/category-manager";
 
 export default function ComponentsPage() {
   const { toast } = useToast();
   const [theme, setTheme] = React.useState("light");
   const [componentsData, setComponentsData] = React.useState<Component[]>(mockComponents);
+  const [categoriesData, setCategoriesData] = React.useState<Category[]>(mockCategories);
   const [logsData, setLogsData] = React.useState<Log[]>(mockLogs);
-  const [searchTerm, setSearchTerm] = React.useState("");
+  const [componentSearchTerm, setComponentSearchTerm] = React.useState("");
+  const [categorySearchTerm, setCategorySearchTerm] = React.useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
 
   const user = mockUsers.admin;
@@ -69,37 +72,67 @@ export default function ComponentsPage() {
     setIsAddDialogOpen(false);
   }
 
+  const handleAddCategory = (name: string) => {
+    setCategoriesData(prev => [...prev, { id: (prev.length + 1).toString(), name }]);
+    toast({ title: "Category Added", description: `Category "${name}" has been added.`});
+  }
+  const handleUpdateCategory = (id: string, name: string) => {
+    setCategoriesData(prev => prev.map(c => c.id === id ? { ...c, name } : c));
+     toast({ title: "Category Updated", description: `Category has been updated to "${name}".`});
+  }
+  const handleDeleteCategory = (id: string) => {
+    setCategoriesData(prev => prev.filter(c => c.id !== id));
+    toast({ title: "Category Deleted", description: "The category has been deleted."});
+  }
+
   const filteredComponents = React.useMemo(() => {
     return componentsData.filter(
       (component) =>
-        component.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        component.category.toLowerCase().includes(searchTerm.toLowerCase())
+        component.name.toLowerCase().includes(componentSearchTerm.toLowerCase()) ||
+        component.category.toLowerCase().includes(componentSearchTerm.toLowerCase())
     );
-  }, [componentsData, searchTerm]);
+  }, [componentsData, componentSearchTerm]);
+
+  const filteredCategories = React.useMemo(() => {
+    return categoriesData.filter((category) =>
+      category.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
+    );
+  }, [categoriesData, categorySearchTerm]);
 
   return (
     <SidebarProvider>
-      <AppSidebar user={user} />
+      <AppSidebar />
       <SidebarInset>
         <div className="flex flex-col min-h-screen">
           <Header
-            user={user}
             onThemeChange={handleThemeChange}
             theme={theme}
-            onSearch={setSearchTerm}
           />
-          <main className="flex-1 p-4 md:p-6 lg:p-8">
-            <ComponentTable 
-              components={filteredComponents} 
-              onBorrow={handleBorrow} 
-              onAddComponent={() => setIsAddDialogOpen(true)}
-            />
+          <main className="flex-1 p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+                <ComponentTable 
+                  components={filteredComponents} 
+                  onBorrow={handleBorrow} 
+                  onAddComponent={() => setIsAddDialogOpen(true)}
+                  onSearch={setComponentSearchTerm}
+                />
+            </div>
+            <div>
+                <CategoryManager 
+                    categories={filteredCategories}
+                    onAdd={handleAddCategory}
+                    onUpdate={handleUpdateCategory}
+                    onDelete={handleDeleteCategory}
+                    onSearch={setCategorySearchTerm}
+                />
+            </div>
           </main>
         </div>
         <AddComponentDialog 
             open={isAddDialogOpen}
             onOpenChange={setIsAddDialogOpen}
             onAddComponent={handleAddComponent}
+            categories={categoriesData}
         />
       </SidebarInset>
     </SidebarProvider>

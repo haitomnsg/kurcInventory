@@ -1,3 +1,4 @@
+
 export type Component = {
   id: string;
   name: string;
@@ -24,6 +25,11 @@ export type Log = {
 export type User = {
   name: string;
   email: string;
-  role: 'admin' | 'member';
+  role: 'admin';
   avatar: string;
 };
+
+export type Category = {
+    id: string;
+    name: string;
+}

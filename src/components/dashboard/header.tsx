@@ -14,22 +14,20 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogOut, Moon, Search, Sun, User as UserIcon } from "lucide-react";
+import { LogOut, Moon, Sun, User as UserIcon } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { mockUsers } from "@/lib/data";
 
 type HeaderProps = {
-  user: User;
   onThemeChange: () => void;
   theme: string;
-  onSearch: (term: string) => void;
 };
 
 export default function Header({
-  user,
   onThemeChange,
   theme,
-  onSearch,
 }: HeaderProps) {
+  const user = mockUsers.admin;
   return (
     <header className="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center px-4 md:px-6 lg:px-8">
@@ -46,18 +44,6 @@ export default function Header({
           className="flex flex-1 items-center justify-between space-x-2 md:justify-end"
           suppressHydrationWarning
         >
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search components..."
-                className="w-full bg-background pl-9 md:w-[200px] lg:w-[320px]"
-                onChange={(e) => onSearch(e.target.value)}
-                suppressHydrationWarning
-              />
-            </div>
-          </div>
           <nav className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={onThemeChange} suppressHydrationWarning>
               {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}

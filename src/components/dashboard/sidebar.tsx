@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -13,18 +14,13 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Gem, LayoutDashboard, Package, History, Users } from "lucide-react";
-import { User } from "@/lib/types";
 
-type AppSidebarProps = {
-    user: User;
-};
-
-export default function AppSidebar({ user }: AppSidebarProps) {
+export default function AppSidebar() {
     const pathname = usePathname();
 
     return (
         <Sidebar>
-            <SidebarHeader className="border-b h-16 flex items-center">
+            <SidebarHeader className="border-b h-16 flex items-center justify-center">
                 <div className="flex items-center gap-3">
                     <Gem className="h-7 w-7 text-primary" />
                     <span className="text-xl font-semibold">KURC Inventory</span>

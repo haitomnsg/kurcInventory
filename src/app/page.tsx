@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import type { Component, Log, User } from "@/lib/types";
+import type { Component, Log } from "@/lib/types";
 import { mockComponents, mockLogs, mockUsers } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,7 +22,6 @@ export default function DashboardPage() {
   const [theme, setTheme] = React.useState("light");
   const [componentsData, setComponentsData] = React.useState<Component[]>(mockComponents);
   const [logsData, setLogsData] = React.useState<Log[]>(mockLogs);
-  const [searchTerm, setSearchTerm] = React.useState("");
 
   const user = mockUsers.admin;
 
@@ -59,14 +58,12 @@ export default function DashboardPage() {
 
   return (
     <SidebarProvider>
-      <AppSidebar user={user} />
+      <AppSidebar />
       <SidebarInset>
         <div className="flex flex-col min-h-screen">
           <Header
-            user={user}
             onThemeChange={handleThemeChange}
             theme={theme}
-            onSearch={setSearchTerm}
           />
           <main className="flex-1 p-4 md:p-6 lg:p-8">
             <InventorySummary components={componentsData} />

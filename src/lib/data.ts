@@ -1,4 +1,5 @@
-import type { Component, Log, User } from './types';
+
+import type { Component, Log, User, Category } from './types';
 
 export const mockUsers: { [key: string]: User } = {
   admin: {
@@ -8,6 +9,14 @@ export const mockUsers: { [key: string]: User } = {
     avatar: 'https://placehold.co/40x40.png',
   },
 };
+
+export const mockCategories: Category[] = [
+  { id: '1', name: 'Microcontroller' },
+  { id: '2', name: 'SBC' },
+  { id: '3', name: 'Motor' },
+  { id: '4', name: 'Sensor' },
+  { id: '5', name: 'Wiring' },
+];
 
 export const mockComponents: Component[] = [
   {
@@ -106,7 +115,7 @@ export const mockLogs: Log[] = [
   },
   {
     id: '4',
-    componentName: 'Raspberry Pi 4',
+    name: 'Raspberry Pi 4',
     userName: 'Alice Johnson',
     action: 'Returned',
     timestamp: '2024-07-25T09:00:00Z',
