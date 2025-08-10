@@ -180,10 +180,10 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
                           <CommandGroup>
                             {componentsForBorrower.map((component) => (
                               <CommandItem
-                                value={component.id || ""}
+                                value={component.name}
                                 key={component.id}
-                                onSelect={(currentValue) => {
-                                  form.setValue("componentId", currentValue === field.value ? "" : currentValue);
+                                onSelect={() => {
+                                  form.setValue("componentId", component.id || "");
                                   setIsComponentPopoverOpen(false);
                                 }}
                               >
