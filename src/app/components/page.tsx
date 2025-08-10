@@ -45,7 +45,7 @@ export default function ComponentsPage() {
         id: (prev.length + 1).toString(),
         componentName: component.name,
         userName: user.name,
-        action: "Borrowed",
+        status: "Borrowed",
         timestamp: new Date().toISOString(),
       },
       ...prev,

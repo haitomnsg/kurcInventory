@@ -18,7 +18,7 @@ export type Log = {
   id: string;
   componentName: string;
   userName: string;
-  action: 'Borrowed' | 'Returned';
+  status: 'Borrowed' | 'Returned';
   timestamp: string;
   name?: string; // from previous mock data, can be removed if not used
 };

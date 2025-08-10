@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Log } from "@/lib/types";
@@ -21,7 +22,7 @@ export default function RecentActivity({ logs }: RecentActivityProps) {
             <p className="text-sm font-medium leading-none">
               {log.userName}
               <span className="text-sm text-muted-foreground font-normal ml-1">
-                {log.action === 'Borrowed' ? 'borrowed' : 'returned'} the
+                {log.status === 'Borrowed' ? 'borrowed' : 'returned'} the
               </span>
               <span className="font-medium"> {log.componentName}</span>.
             </p>

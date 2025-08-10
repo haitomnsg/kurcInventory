@@ -30,7 +30,7 @@ export default function LogsPage() {
   
   const [logsData, setLogsData] = React.useState<EnrichedLog[]>(() => {
     return mockLogs.map(log => {
-        if (log.action === 'Borrowed') {
+        if (log.status === 'Borrowed') {
             const component = mockComponents.find(c => c.name === log.componentName && c.status === 'Borrowed');
             return {
                 ...log,
@@ -68,7 +68,7 @@ export default function LogsPage() {
       id: (logsData.length + 1).toString(),
       componentName: component.name,
       userName: details.userName,
-      action: "Borrowed",
+      status: "Borrowed",
       timestamp: new Date().toISOString(),
       expectedReturnDate: details.expectedReturnDate.toISOString().split('T')[0]
     };
@@ -94,7 +94,7 @@ export default function LogsPage() {
       id: (logsData.length + 1).toString(),
       componentName: component.name,
       userName: component.borrowedBy || 'Unknown',
-      action: "Returned",
+      status: "Returned",
       timestamp: new Date().toISOString(),
     };
     setLogsData(prev => [newLog, ...prev]);
@@ -111,7 +111,7 @@ export default function LogsPage() {
 
     // Re-enrich logs with latest component data
     logs = logs.map(log => {
-      if (log.action === 'Borrowed') {
+      if (log.status === 'Borrowed') {
         const component = componentsData.find(c => c.name === log.componentName && c.status === 'Borrowed');
         // if component is not found among borrowed, it means it was returned.
         // But we might want to keep the log.
@@ -130,9 +130,9 @@ export default function LogsPage() {
         if (filter === "all") return true;
         if (filter === 'borrowed') {
             const component = componentsData.find(c => c.name === log.componentName);
-            return log.action.toLowerCase() === filter && component?.status === 'Borrowed';
+            return log.status.toLowerCase() === filter && component?.status === 'Borrowed';
         }
-        return log.action.toLowerCase() === filter;
+        return log.status.toLowerCase() === filter;
       })
       .filter(
         (log) =>
@@ -194,9 +194,9 @@ export default function LogsPage() {
                     <TableRow>
                       <TableHead>Component</TableHead>
                       <TableHead>User</TableHead>
-                      <TableHead>Action</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Expected Return</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Issue Date</TableHead>
+                      <TableHead>Return Date</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -205,8 +205,8 @@ export default function LogsPage() {
                         <TableCell className="font-medium">{log.componentName}</TableCell>
                         <TableCell>{log.userName}</TableCell>
                         <TableCell>
-                          <Badge variant={log.action === "Borrowed" ? "destructive" : "secondary"}>
-                            {log.action}
+                          <Badge variant={log.status === "Borrowed" ? "destructive" : "secondary"}>
+                            {log.status}
                           </Badge>
                         </TableCell>
                         <TableCell>{format(new Date(log.timestamp), "PPP")}</TableCell>
