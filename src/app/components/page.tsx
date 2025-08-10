@@ -26,8 +26,6 @@ export default function ComponentsPage() {
   const [isReturnDialogOpen, setIsReturnDialogOpen] = React.useState(false);
   const [selectedComponent, setSelectedComponent] = React.useState<Component | null>(null);
 
-  const user = mockUsers.admin;
-
   React.useEffect(() => {
     document.documentElement.classList.remove("light", "dark");
     document.documentElement.classList.add(theme);
@@ -40,14 +38,14 @@ export default function ComponentsPage() {
   const handleBorrow = (component: Component, details: { expectedReturnDate: Date; purpose: string }) => {
     setComponentsData(prev =>
       prev.map(c =>
-        c.id === component.id ? { ...c, status: "Borrowed", borrowedBy: user.name, expectedReturnDate: details.expectedReturnDate.toISOString().split('T')[0] } : c
+        c.id === component.id ? { ...c, status: "Borrowed", borrowedBy: mockUsers.admin.name, expectedReturnDate: details.expectedReturnDate.toISOString().split('T')[0] } : c
       )
     );
     setLogsData(prev => [
       {
         id: (prev.length + 1).toString(),
         componentName: component.name,
-        userName: user.name,
+        userName: mockUsers.admin.name,
         status: "Borrowed",
         timestamp: new Date().toISOString(),
       },
