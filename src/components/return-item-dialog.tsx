@@ -182,8 +182,11 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
                               <CommandItem
                                 value={component.name}
                                 key={component.id}
-                                onSelect={() => {
-                                  form.setValue("componentId", component.id || "");
+                                onSelect={(currentValue) => {
+                                   const selectedComponent = componentsForBorrower.find(c => c.name.toLowerCase() === currentValue.toLowerCase());
+                                    if (selectedComponent && selectedComponent.id) {
+                                      form.setValue("componentId", selectedComponent.id);
+                                    }
                                   setIsComponentPopoverOpen(false);
                                 }}
                               >

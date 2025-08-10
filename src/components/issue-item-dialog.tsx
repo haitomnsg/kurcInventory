@@ -161,8 +161,11 @@ export function IssueItemDialog({ components, onIssue, open, onOpenChange }: Iss
                             <CommandItem
                               value={component.name}
                               key={component.id}
-                              onSelect={() => {
-                                form.setValue("componentId", component.id || "");
+                              onSelect={(currentValue) => {
+                                const selectedComponent = components.find(c => c.name.toLowerCase() === currentValue.toLowerCase());
+                                if (selectedComponent && selectedComponent.id) {
+                                  form.setValue("componentId", selectedComponent.id);
+                                }
                                 setIsComponentPopoverOpen(false);
                               }}
                             >
