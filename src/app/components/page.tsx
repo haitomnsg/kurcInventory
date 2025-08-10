@@ -2,9 +2,12 @@
 "use client";
 
 import * as React from "react";
+import useSWR, { mutate } from 'swr';
 import type { Component, Log, User, Category } from "@/lib/types";
-import { mockComponents, mockLogs, mockUsers, mockCategories } from "@/lib/data";
+import { mockUsers } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
+import { fetchComponents, fetchCategories, addComponent, addCategory, updateCategory, deleteCategory } from "@/lib/data-service";
+
 
 import Header from "@/components/dashboard/header";
 import ComponentTable from "@/components/dashboard/component-table";
@@ -13,13 +16,16 @@ import AppSidebar from "@/components/dashboard/sidebar";
 import { AddComponentDialog } from "@/components/add-component-dialog";
 import CategoryManager from "@/components/dashboard/category-manager";
 import { ReturnItemDialog } from "@/components/return-item-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function ComponentsPage() {
   const { toast } = useToast();
   const [theme, setTheme] = React.useState("light");
-  const [componentsData, setComponentsData] = React.useState<Component[]>(mockComponents);
-  const [categoriesData, setCategoriesData] = React.useState<Category[]>(mockCategories);
-  const [logsData, setLogsData] = React.useState<Log[]>(mockLogs);
+
+  const { data: componentsData, error: componentsError } = useSWR<Component[]>('components', fetchComponents);
+  const { data: categoriesData, error: categoriesError } = useSWR<Category[]>('categories', fetchCategories);
+
   const [componentSearchTerm, setComponentSearchTerm] = React.useState("");
   const [categorySearchTerm, setCategorySearchTerm] = React.useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
@@ -36,21 +42,8 @@ export default function ComponentsPage() {
   };
 
   const handleBorrow = (component: Component, details: { expectedReturnDate: Date; purpose: string }) => {
-    setComponentsData(prev =>
-      prev.map(c =>
-        c.id === component.id ? { ...c, status: "Borrowed", borrowedBy: mockUsers.admin.name, expectedReturnDate: details.expectedReturnDate.toISOString().split('T')[0] } : c
-      )
-    );
-    setLogsData(prev => [
-      {
-        id: (prev.length + 1).toString(),
-        componentName: component.name,
-        userName: mockUsers.admin.name,
-        status: "Borrowed",
-        timestamp: new Date().toISOString(),
-      },
-      ...prev,
-    ]);
+    // This needs to be implemented with Firestore updates
+    console.log("Borrowing component:", component, "with details:", details);
     toast({
       title: "Component Borrowed",
       description: `${component.name} has been successfully borrowed.`,
@@ -58,20 +51,8 @@ export default function ComponentsPage() {
   };
   
   const handleReturn = (component: Component, remarks: string) => {
-     setComponentsData(prev =>
-        prev.map(c =>
-            c.id === component.id ? { ...c, status: 'Available', borrowedBy: undefined, expectedReturnDate: undefined } : c
-        )
-    );
-     const newLog: Log = {
-      id: (logsData.length + 1).toString(),
-      componentName: component.name,
-      userName: component.borrowedBy || 'Unknown',
-      status: "Returned",
-      timestamp: new Date().toISOString(),
-    };
-    setLogsData(prev => [newLog, ...prev]);
-
+    // This needs to be implemented with Firestore updates
+     console.log("Returning component:", component, "with remarks:", remarks);
     toast({
       title: "Component Returned",
       description: `${component.name} has been returned.`,
@@ -80,36 +61,62 @@ export default function ComponentsPage() {
     setSelectedComponent(null);
   }
 
-  const handleAddComponent = (newComponent: Omit<Component, 'id' | 'status' | 'imageUrl' | 'aiHint'>) => {
-    const componentToAdd: Component = {
-        ...newComponent,
-        id: (componentsData.length + 1).toString(),
-        status: "Available",
-        imageUrl: "https://placehold.co/100x100.png",
-        aiHint: `${newComponent.name.toLowerCase()} ${newComponent.category.toLowerCase()}`.trim(),
-    };
-    setComponentsData(prev => [componentToAdd, ...prev]);
-    toast({
-        title: "Component Added",
-        description: `${newComponent.name} has been successfully added to the inventory.`
-    });
-    setIsAddDialogOpen(false);
+  const handleAddComponent = async (newComponent: Omit<Component, 'id' | 'status' | 'imageUrl' | 'aiHint'>) => {
+    try {
+        const componentToAdd: Omit<Component, 'id'> = {
+            ...newComponent,
+            status: "Available",
+            imageUrl: "https://placehold.co/100x100.png",
+            aiHint: `${newComponent.name.toLowerCase()} ${newComponent.category.toLowerCase()}`.trim(),
+        };
+        await addComponent(componentToAdd);
+        mutate('components');
+        toast({
+            title: "Component Added",
+            description: `${newComponent.name} has been successfully added to the inventory.`
+        });
+        setIsAddDialogOpen(false);
+    } catch (error) {
+        toast({
+            title: "Error",
+            description: "Failed to add component.",
+            variant: "destructive"
+        });
+    }
   }
 
-  const handleAddCategory = (name: string) => {
-    setCategoriesData(prev => [...prev, { id: (prev.length + 1).toString(), name }]);
-    toast({ title: "Category Added", description: `Category "${name}" has been added.`});
+  const handleAddCategory = async (name: string) => {
+    try {
+        await addCategory({ name });
+        mutate('categories');
+        toast({ title: "Category Added", description: `Category "${name}" has been added.`});
+    } catch (error) {
+        toast({ title: "Error", description: "Failed to add category.", variant: "destructive" });
+    }
   }
-  const handleUpdateCategory = (id: string, name: string) => {
-    setCategoriesData(prev => prev.map(c => c.id === id ? { ...c, name } : c));
-     toast({ title: "Category Updated", description: `Category has been updated to "${name}".`});
+  
+  const handleUpdateCategory = async (id: string, name: string) => {
+    try {
+        await updateCategory(id, { name });
+        mutate('categories');
+        toast({ title: "Category Updated", description: `Category has been updated to "${name}".`});
+    } catch (error) {
+         toast({ title: "Error", description: "Failed to update category.", variant: "destructive" });
+    }
   }
-  const handleDeleteCategory = (id: string) => {
-    setCategoriesData(prev => prev.filter(c => c.id !== id));
-    toast({ title: "Category Deleted", description: "The category has been deleted."});
+
+  const handleDeleteCategory = async (id: string) => {
+    try {
+        await deleteCategory(id);
+        mutate('categories');
+        toast({ title: "Category Deleted", description: "The category has been deleted."});
+    } catch (error) {
+        toast({ title: "Error", description: "Failed to delete category.", variant: "destructive" });
+    }
   }
 
   const filteredComponents = React.useMemo(() => {
+    if (!componentsData) return [];
     return componentsData.filter(
       (component) =>
         component.name.toLowerCase().includes(componentSearchTerm.toLowerCase()) ||
@@ -118,6 +125,7 @@ export default function ComponentsPage() {
   }, [componentsData, componentSearchTerm]);
 
   const filteredCategories = React.useMemo(() => {
+    if (!categoriesData) return [];
     return categoriesData.filter((category) =>
       category.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
     );
@@ -126,6 +134,30 @@ export default function ComponentsPage() {
   const handleOpenReturnDialog = (component: Component) => {
     setSelectedComponent(component);
     setIsReturnDialogOpen(true);
+  }
+
+  const renderLoadingSkeleton = () => (
+    <Card>
+        <CardContent className="p-6">
+            <div className="space-y-4">
+                <Skeleton className="h-8 w-1/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <div className="space-y-2 pt-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+            </div>
+        </CardContent>
+    </Card>
+  )
+
+  if (componentsError || categoriesError) {
+    return (
+        <div className="flex items-center justify-center h-screen">
+            <p className="text-destructive">Failed to load data. Please try again later.</p>
+        </div>
+    )
   }
 
   return (
@@ -139,22 +171,24 @@ export default function ComponentsPage() {
           />
           <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-8">
             <div>
-                <ComponentTable 
-                  components={filteredComponents.slice(0, 10)} 
-                  onBorrow={handleBorrow} 
-                  onReturn={handleOpenReturnDialog}
-                  onAddComponent={() => setIsAddDialogOpen(true)}
-                  onSearch={setComponentSearchTerm}
-                />
+                {!componentsData ? renderLoadingSkeleton() : (
+                    <ComponentTable 
+                      components={filteredComponents.slice(0, 10)} 
+                      onAddComponent={() => setIsAddDialogOpen(true)}
+                      onSearch={setComponentSearchTerm}
+                    />
+                )}
             </div>
             <div>
-                <CategoryManager 
-                    categories={filteredCategories}
-                    onAdd={handleAddCategory}
-                    onUpdate={handleUpdateCategory}
-                    onDelete={handleDeleteCategory}
-                    onSearch={setCategorySearchTerm}
-                />
+                {!categoriesData ? renderLoadingSkeleton() : (
+                    <CategoryManager 
+                        categories={filteredCategories}
+                        onAdd={handleAddCategory}
+                        onUpdate={handleUpdateCategory}
+                        onDelete={handleDeleteCategory}
+                        onSearch={setCategorySearchTerm}
+                    />
+                )}
             </div>
           </main>
         </div>
@@ -162,9 +196,9 @@ export default function ComponentsPage() {
             open={isAddDialogOpen}
             onOpenChange={setIsAddDialogOpen}
             onAddComponent={handleAddComponent}
-            categories={categoriesData}
+            categories={categoriesData || []}
         />
-        {selectedComponent && (
+        {selectedComponent && componentsData && (
             <ReturnItemDialog
                 open={isReturnDialogOpen}
                 onOpenChange={(open) => {

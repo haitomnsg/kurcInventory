@@ -1,6 +1,6 @@
 
 export type Component = {
-  id: string;
+  id?: string;
   name: string;
   category: string;
   quantity: number;
@@ -15,7 +15,7 @@ export type Component = {
 };
 
 export type Log = {
-  id: string;
+  id?: string;
   componentName: string;
   userName: string;
   status: 'Borrowed' | 'Returned';
@@ -24,6 +24,7 @@ export type Log = {
 };
 
 export type User = {
+  id?: string;
   name: string;
   email: string;
   role: 'admin';
@@ -31,6 +32,6 @@ export type User = {
 };
 
 export type Category = {
-    id: string;
+    id?: string;
     name: string;
 }
