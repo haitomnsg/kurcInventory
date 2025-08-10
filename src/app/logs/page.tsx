@@ -289,7 +289,9 @@ export default function LogsPage() {
                                 <TableCell>{log.quantity}</TableCell>
                                 <TableCell>{format(new Date(log.issueDate), "PPP")}</TableCell>
                                 <TableCell>
-                                    {log.returnDate ? format(new Date(log.returnDate), "PPP") : "N/A"}
+                                    {log.status === 'Returned' && log.returnDate 
+                                        ? format(new Date(log.returnDate), "PPP") 
+                                        : (log.expectedReturnDate ? format(new Date(log.expectedReturnDate), "PPP") : "N/A")}
                                 </TableCell>
                                 <TableCell>
                                     <Badge variant={log.status === "Borrowed" ? "destructive" : "secondary"}>

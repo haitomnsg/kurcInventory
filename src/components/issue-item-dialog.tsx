@@ -43,7 +43,7 @@ const issueItemSchema = z.object({
   contactNumber: z.string().min(1, "Contact number is required."),
   purpose: z.string().min(10, { message: "Please provide a more detailed purpose." }),
   expectedReturnDate: z.date({
-    required_error: "An expected return date is required.",
+    required_error: "A return date is required.",
   }),
 });
 
@@ -192,7 +192,7 @@ export function IssueItemDialog({ components, onIssue, open, onOpenChange }: Iss
               name="expectedReturnDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Expected Return Date</FormLabel>
+                  <FormLabel>Return Date</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
