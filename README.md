@@ -1,4 +1,3 @@
-
 # 🤖 KURC Inventory Tracker
 
 An intelligent inventory management system built for the Kathmandu University Robotics Club (KURC). This application helps track electronic components, manage borrowing and returns, and ensures the club's resources are used safely and efficiently, with an AI-powered sanity check for borrowing purposes.
@@ -9,11 +8,11 @@ An intelligent inventory management system built for the Kathmandu University Ro
 
 | Dashboard | Components Page |
 | :---: | :---: |
-| <img src="https://placehold.co/600x400.png" alt="Dashboard Screenshot" data-ai-hint="dashboard application" /> | <img src="https://placehold.co/600x400.png" alt="Components Page Screenshot" data-ai-hint="inventory table" /> |
+| <img src="https://github.com/user-attachments/assets/6f728e1c-0141-477e-aa6b-76bc18562b48" alt="Dashboard Screenshot" data-ai-hint="dashboard application" /> | <img src="https://github.com/user-attachments/assets/a7c86847-7772-4efc-b09e-4c2028328042" alt="Components Page Screenshot" data-ai-hint="inventory table" /> |
 
 | Transaction Logs | Issue Item Dialog |
 | :---: | :---: |
-| <img src="https://placehold.co/600x400.png" alt="Logs Page Screenshot" data-ai-hint="transaction log" /> | <img src="https://placehold.co/600x400.png" alt="Issue Item Dialog Screenshot" data-ai-hint="modal dialog" /> |
+| <img src="https://github.com/user-attachments/assets/933535a0-93af-45a5-aaae-bcfb9e5813d5" alt="Logs Page Screenshot" data-ai-hint="transaction log" /> | <img src="https://github.com/user-attachments/assets/9a286cd3-c074-4ea9-bc79-22923cd0ea88" alt="Issue Item Dialog Screenshot" data-ai-hint="modal dialog" /> |
 
 
 ---
