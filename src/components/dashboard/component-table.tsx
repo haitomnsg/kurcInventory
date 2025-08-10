@@ -2,7 +2,6 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import type { Component } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,14 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Pencil, Trash2, Search, PackagePlus, PackageCheck } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { PlusCircle, CheckCircle2, XCircle, Pencil, Trash2, Search, PackagePlus, PackageCheck } from "lucide-react";
 import { BorrowDialog } from "../borrow-dialog";
 import { Input } from "../ui/input";
 
@@ -62,9 +54,7 @@ export default function ComponentTable({ components, onBorrow, onReturn, onAddCo
             <TableHead>Status</TableHead>
             {!minimal && <TableHead className="hidden md:table-cell">Category</TableHead>}
             {!minimal && <TableHead className="hidden md:table-cell">Quantity</TableHead>}
-            <TableHead>
-              <span className="sr-only">Actions</span>
-            </TableHead>
+            <TableHead className="w-[180px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -83,41 +73,26 @@ export default function ComponentTable({ components, onBorrow, onReturn, onAddCo
               </TableCell>
               {!minimal && <TableCell className="hidden md:table-cell">{component.category}</TableCell>}
               {!minimal && <TableCell className="hidden md:table-cell">{component.quantity}</TableCell>}
-              <TableCell>
-                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                        aria-haspopup="true"
-                        size="icon"
-                        variant="ghost"
-                        >
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Toggle menu</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        {component.status === 'Available' ? (
-                            <DropdownMenuItem onClick={() => handleBorrowClick(component)}>
-                                <PackagePlus className="mr-2 h-4 w-4" />
-                                Borrow
-                            </DropdownMenuItem>
-                        ) : (
-                             <DropdownMenuItem onClick={() => handleReturnClick(component)}>
-                                <PackageCheck className="mr-2 h-4 w-4" />
-                                Return
-                            </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+              <TableCell className="flex gap-2">
+                {component.status === 'Available' ? (
+                  <Button variant="outline" size="icon" onClick={() => handleBorrowClick(component)}>
+                    <PackagePlus className="h-4 w-4" />
+                    <span className="sr-only">Borrow</span>
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="icon" onClick={() => handleReturnClick(component)}>
+                    <PackageCheck className="h-4 w-4" />
+                    <span className="sr-only">Return</span>
+                  </Button>
+                )}
+                <Button variant="outline" size="icon">
+                  <Pencil className="h-4 w-4" />
+                  <span className="sr-only">Edit</span>
+                </Button>
+                <Button variant="destructive" size="icon">
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Delete</span>
+                </Button>
               </TableCell>
             </TableRow>
           ))}
