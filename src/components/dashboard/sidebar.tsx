@@ -54,14 +54,16 @@ export default function AppSidebar() {
                         </Link>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                        <SidebarMenuButton 
-                            size="lg"
-                            isActive={pathname === "/logs"}
-                            tooltip="Transaction Logs"
-                        >
-                            <History />
-                            Transaction Logs
-                        </SidebarMenuButton>
+                        <Link href="/logs">
+                            <SidebarMenuButton 
+                                size="lg"
+                                isActive={pathname === "/logs"}
+                                tooltip="Transaction Logs"
+                            >
+                                <History />
+                                Transaction Logs
+                            </SidebarMenuButton>
+                        </Link>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton 

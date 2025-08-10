@@ -115,7 +115,7 @@ export const mockLogs: Log[] = [
   },
   {
     id: '4',
-    name: 'Raspberry Pi 4',
+    componentName: 'Raspberry Pi 4',
     userName: 'Alice Johnson',
     action: 'Returned',
     timestamp: '2024-07-25T09:00:00Z',
