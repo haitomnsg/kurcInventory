@@ -14,14 +14,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { PlusCircle, CheckCircle2, XCircle, Pencil, Trash2, Search, PackagePlus, PackageCheck } from "lucide-react";
+import { PlusCircle, Pencil, Trash2, Search } from "lucide-react";
 import { BorrowDialog } from "../borrow-dialog";
 import { Input } from "../ui/input";
 
 type ComponentTableProps = {
   components: Component[];
   onBorrow: (component: Component, details: { expectedReturnDate: Date; purpose:string }) => void;
-  onReturn: (component: Component) => void;
+  onReturn?: (component: Component) => void;
   onAddComponent?: () => void;
   onSearch?: (term: string) => void;
   minimal?: boolean;
@@ -35,10 +35,6 @@ export default function ComponentTable({ components, onBorrow, onReturn, onAddCo
     setSelectedComponent(component);
     setIsBorrowDialogOpen(true);
   };
-
-  const handleReturnClick = (component: Component) => {
-    onReturn(component);
-  }
   
   const handleDialogClose = () => {
     setIsBorrowDialogOpen(false);
@@ -51,10 +47,9 @@ export default function ComponentTable({ components, onBorrow, onReturn, onAddCo
           <TableRow>
             {!minimal && <TableHead className="w-[50px]">S.N.</TableHead>}
             <TableHead>Name</TableHead>
-            <TableHead>Status</TableHead>
             {!minimal && <TableHead className="hidden md:table-cell">Category</TableHead>}
             {!minimal && <TableHead className="hidden md:table-cell">Quantity</TableHead>}
-            <TableHead className="w-[180px]">Actions</TableHead>
+            <TableHead className="w-[120px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -62,29 +57,9 @@ export default function ComponentTable({ components, onBorrow, onReturn, onAddCo
             <TableRow key={component.id}>
               {!minimal && <TableCell className="font-medium">{index + 1}</TableCell>}
               <TableCell className="font-medium">{component.name}</TableCell>
-              <TableCell>
-                <Badge variant={component.status === 'Available' ? 'outline' : 'destructive'} className="flex items-center gap-1 w-fit">
-                  {component.status === 'Available' ? 
-                    <CheckCircle2 className="h-3 w-3 text-green-600" /> : 
-                    <XCircle className="h-3 w-3" />
-                  }
-                  <span>{component.status}</span>
-                </Badge>
-              </TableCell>
               {!minimal && <TableCell className="hidden md:table-cell">{component.category}</TableCell>}
               {!minimal && <TableCell className="hidden md:table-cell">{component.quantity}</TableCell>}
               <TableCell className="flex gap-2">
-                {component.status === 'Available' ? (
-                  <Button variant="outline" size="icon" onClick={() => handleBorrowClick(component)}>
-                    <PackagePlus className="h-4 w-4" />
-                    <span className="sr-only">Borrow</span>
-                  </Button>
-                ) : (
-                  <Button variant="outline" size="icon" onClick={() => handleReturnClick(component)}>
-                    <PackageCheck className="h-4 w-4" />
-                    <span className="sr-only">Return</span>
-                  </Button>
-                )}
                 <Button variant="outline" size="icon">
                   <Pencil className="h-4 w-4" />
                   <span className="sr-only">Edit</span>
