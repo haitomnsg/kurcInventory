@@ -41,7 +41,6 @@ type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 export default function AccountPage() {
     const { toast } = useToast();
-    const [theme, setTheme] = React.useState("light");
     const [user, setUser] = React.useState<User | null>(null);
     const [isLoading, setIsLoading] = React.useState(true);
     const [isAccountSaving, setIsAccountSaving] = React.useState(false);
@@ -73,16 +72,6 @@ export default function AccountPage() {
         });
         return () => unsubscribe();
     }, [accountForm]);
-
-
-    React.useEffect(() => {
-        document.documentElement.classList.remove("light", "dark");
-        document.documentElement.classList.add(theme);
-    }, [theme]);
-
-    const handleThemeChange = () => {
-        setTheme(theme === "light" ? "dark" : "light");
-    };
     
     const onAccountSubmit = async (data: AccountFormValues) => {
         if (!user) return;
@@ -177,7 +166,7 @@ export default function AccountPage() {
                 <AppSidebar />
                 <SidebarInset>
                     <div className="flex flex-col min-h-screen">
-                        <Header onThemeChange={handleThemeChange} theme={theme} user={user} />
+                        <Header user={user} />
                         <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-8">
                            { isLoading ? renderLoadingSkeleton() : (
                              <div className="grid gap-8 md:grid-cols-2">

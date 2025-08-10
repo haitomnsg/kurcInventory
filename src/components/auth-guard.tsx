@@ -14,8 +14,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const [isLoading, setIsLoading] = React.useState(true);
     const [isAuthenticated, setIsAuthenticated] = React.useState(false);
-    const [theme, setTheme] = React.useState("light");
-
 
     React.useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -29,15 +27,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
         return () => unsubscribe();
     }, [router]);
-    
-    React.useEffect(() => {
-        document.documentElement.classList.remove("light", "dark");
-        document.documentElement.classList.add(theme);
-    }, [theme]);
-
-    const handleThemeChange = () => {
-        setTheme(theme === "light" ? "dark" : "light");
-    };
 
     if (isLoading) {
         return (
@@ -45,7 +34,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                 <AppSidebar />
                 <SidebarInset>
                     <div className="flex flex-col min-h-screen">
-                        <Header onThemeChange={handleThemeChange} theme={theme} />
+                        <Header user={null} />
                         <main className="flex-1 p-4 md:p-6 lg:p-8">
                              <div className="space-y-4">
                                 <Skeleton className="h-24 w-full" />

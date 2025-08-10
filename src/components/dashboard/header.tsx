@@ -18,20 +18,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Moon, Sun, User as UserIcon } from "lucide-react";
+import { LogOut, User as UserIcon } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
 
 
 type HeaderProps = {
-  onThemeChange: () => void;
-  theme: string;
   user: User | null;
 };
 
 export default function Header({
-  onThemeChange,
-  theme,
   user
 }: HeaderProps) {
   const router = useRouter();
@@ -65,17 +61,12 @@ export default function Header({
 
         <div
           className="flex flex-1 items-center justify-between space-x-2 md:justify-end"
-          suppressHydrationWarning
         >
           <nav className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={onThemeChange} suppressHydrationWarning>
-              {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-              <span className="sr-only">Toggle theme</span>
-            </Button>
             { user && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full" suppressHydrationWarning>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar>
                       <AvatarImage src={userAvatar} alt={user.displayName || "User"} data-ai-hint="user avatar" />
                       <AvatarFallback>{userInitial}</AvatarFallback>

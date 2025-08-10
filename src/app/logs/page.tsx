@@ -29,7 +29,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LogsPage() {
   const { toast } = useToast();
-  const [theme, setTheme] = React.useState("light");
   const [user, setUser] = React.useState<User | null>(null);
   
   const { data: logsData, error: logsError } = useSWR<Log[]>('logs', fetchLogs);
@@ -50,16 +49,6 @@ export default function LogsPage() {
     });
     return () => unsubscribe();
   }, []);
-
-
-  React.useEffect(() => {
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(theme);
-  }, [theme]);
-
-  const handleThemeChange = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
 
   const handleOpenEditDialog = (log: Log) => {
     setSelectedLog(log);
@@ -228,7 +217,7 @@ export default function LogsPage() {
         <AppSidebar />
         <SidebarInset>
           <div className="flex flex-col min-h-screen">
-            <Header onThemeChange={handleThemeChange} theme={theme} user={user} />
+            <Header user={user} />
             <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-6">
               <Card className="bg-muted-background">
                   <CardContent className="p-4">

@@ -23,7 +23,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
   const { toast } = useToast();
-  const [theme, setTheme] = React.useState("light");
   const [user, setUser] = React.useState<User | null>(null);
 
   const { data: componentsData, error: componentsError } = useSWR<Component[]>('components', fetchComponents);
@@ -35,15 +34,6 @@ export default function DashboardPage() {
     });
     return () => unsubscribe();
   }, []);
-
-  React.useEffect(() => {
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(theme);
-  }, [theme]);
-
-  const handleThemeChange = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
   
   const isLoading = (!componentsData && !componentsError) || (!logsData && !logsError);
 
@@ -74,8 +64,6 @@ export default function DashboardPage() {
         <SidebarInset>
           <div className="flex flex-col min-h-screen">
             <Header
-              onThemeChange={handleThemeChange}
-              theme={theme}
               user={user}
             />
             <main className="flex-1 p-4 md:p-6 lg:p-8">

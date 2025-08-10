@@ -24,7 +24,6 @@ import AuthGuard from "@/components/auth-guard";
 
 export default function ComponentsPage() {
   const { toast } = useToast();
-  const [theme, setTheme] = React.useState("light");
   const [user, setUser] = React.useState<any>(null);
 
   const { data: componentsData, error: componentsError } = useSWR<Component[]>('components', fetchComponents);
@@ -43,15 +42,6 @@ export default function ComponentsPage() {
     });
     return () => unsubscribe();
   }, []);
-
-  React.useEffect(() => {
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(theme);
-  }, [theme]);
-
-  const handleThemeChange = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
 
   const handleOpenEditDialog = (component: Component) => {
     setSelectedComponent(component);
@@ -204,8 +194,6 @@ export default function ComponentsPage() {
         <SidebarInset>
           <div className="flex flex-col min-h-screen">
             <Header
-              onThemeChange={handleThemeChange}
-              theme={theme}
               user={user}
             />
             <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-8">
