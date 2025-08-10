@@ -39,7 +39,7 @@ type EditComponentFormValues = z.infer<typeof editComponentSchema>;
 
 type EditComponentDialogProps = {
   component: Component;
-  onEditComponent: (data: EditComponentFormValues) => void;
+  onEditComponent: (data: Partial<Component>) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: Category[];
@@ -73,6 +73,21 @@ export function EditComponentDialog({ component, onEditComponent, open, onOpenCh
       onOpenChange(isOpen);
   }
 
+  const onSubmit = (data: EditComponentFormValues) => {
+    const borrowedCount = component.totalQuantity - component.availableQuantity;
+    const newAvailableQuantity = data.totalQuantity - borrowedCount;
+
+    if (newAvailableQuantity < 0) {
+        form.setError("totalQuantity", { type: "manual", message: `Cannot set total quantity below the number of borrowed items (${borrowedCount}).` });
+        return;
+    }
+
+    onEditComponent({
+      ...data,
+      availableQuantity: newAvailableQuantity,
+    });
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
@@ -83,7 +98,7 @@ export function EditComponentDialog({ component, onEditComponent, open, onOpenCh
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onEditComponent)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"

@@ -86,18 +86,14 @@ export default function ComponentsPage() {
     }
   }
 
-  const handleUpdateComponent = async (componentToUpdate: Omit<Component, 'id' | 'aiHint' | 'availableQuantity'>) => {
+  const handleUpdateComponent = async (componentToUpdate: Partial<Component>) => {
     if (!selectedComponent?.id) return;
     try {
-        const availableQuantity = componentToUpdate.totalQuantity - (selectedComponent.totalQuantity - selectedComponent.availableQuantity)
-        await updateComponent(selectedComponent.id, {
-          ...componentToUpdate,
-          availableQuantity: Math.max(0, availableQuantity) // Ensure it doesn't go below zero
-        });
+        await updateComponent(selectedComponent.id, componentToUpdate);
         mutate('components');
         toast({
             title: "Component Updated",
-            description: `${componentToUpdate.name} has been successfully updated.`
+            description: `${selectedComponent.name} has been successfully updated.`
         });
         setIsEditDialogOpen(false);
         setSelectedComponent(null);
