@@ -12,12 +12,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
+import * as React from "react";
 
 type RecentActivityProps = {
   logs: Log[];
 };
 
-export default function RecentActivity({ logs }: RecentActivityProps) {
+function RecentActivity({ logs }: RecentActivityProps) {
   return (
     <Table>
       <TableHeader>
@@ -53,3 +54,5 @@ export default function RecentActivity({ logs }: RecentActivityProps) {
     </Table>
   );
 }
+
+export default React.memo(RecentActivity);

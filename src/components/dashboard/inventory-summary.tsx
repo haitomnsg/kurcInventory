@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Component } from "@/lib/types";
@@ -9,7 +10,7 @@ type InventorySummaryProps = {
   components: Component[];
 };
 
-export default function InventorySummary({ components }: InventorySummaryProps) {
+function InventorySummary({ components }: InventorySummaryProps) {
   const summary = React.useMemo(() => {
     const total = components.reduce((sum, item) => sum + item.totalQuantity, 0);
     const available = components.reduce((sum, item) => sum + item.availableQuantity, 0);
@@ -64,3 +65,4 @@ export default function InventorySummary({ components }: InventorySummaryProps) 
     </div>
   );
 }
+export default React.memo(InventorySummary);

@@ -25,7 +25,7 @@ type CategoryManagerProps = {
   onSearch: (term: string) => void;
 };
 
-export default function CategoryManager({ categories, onAdd, onUpdate, onDelete, onSearch }: CategoryManagerProps) {
+function CategoryManager({ categories, onAdd, onUpdate, onDelete, onSearch }: CategoryManagerProps) {
     const [editingCategory, setEditingCategory] = React.useState<Category | null>(null);
     const [categoryName, setCategoryName] = React.useState("");
 
@@ -136,3 +136,5 @@ export default function CategoryManager({ categories, onAdd, onUpdate, onDelete,
     </div>
   );
 }
+
+export default React.memo(CategoryManager);

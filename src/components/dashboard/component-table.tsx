@@ -26,7 +26,7 @@ type ComponentTableProps = {
   minimal?: boolean;
 };
 
-export default function ComponentTable({ components, onAddComponent, onEditComponent, onDeleteComponent, onSearch, minimal = false }: ComponentTableProps) {
+function ComponentTable({ components, onAddComponent, onEditComponent, onDeleteComponent, onSearch, minimal = false }: ComponentTableProps) {
   
   const tableContent = (
      <Table>
@@ -127,3 +127,5 @@ export default function ComponentTable({ components, onAddComponent, onEditCompo
     </>
   );
 }
+
+export default React.memo(ComponentTable);
