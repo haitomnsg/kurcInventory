@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Checks the borrowing purpose for safety and rule compliance.
@@ -41,13 +42,7 @@ const prompt = ai.definePrompt({
   - Components should not be modified without permission.
   - Components should be returned in the same condition they were borrowed.
 
-  Assess the provided purpose and determine if it is safe and follows the rules. If the purpose is unsafe or violates the rules, set isSafe to false and provide a warning message. If the purpose is safe and compliant, set isSafe to true and set warningMessage to an empty string.
-
-  Respond in JSON format:
-  {
-    "isSafe": boolean,
-    "warningMessage": string
-  }`,
+  Assess the provided purpose and determine if it is safe and follows the rules. If the purpose is unsafe or violates the rules, set isSafe to false and provide a warning message. If the purpose is safe and compliant, set isSafe to true and set warningMessage to an empty string.`,
 });
 
 const borrowingSanityCheckFlow = ai.defineFlow(

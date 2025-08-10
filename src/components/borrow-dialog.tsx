@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -88,9 +89,17 @@ export function BorrowDialog({ component, onBorrow, open, onOpenChange }: Borrow
       onBorrow(data);
     }
   };
+  
+  const handleOpenChange = (isOpen: boolean) => {
+    if(!isOpen) {
+      form.reset();
+      setAiWarning(null);
+    }
+    onOpenChange(isOpen);
+  }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Borrow: {component.name}</DialogTitle>
@@ -171,7 +180,7 @@ export function BorrowDialog({ component, onBorrow, open, onOpenChange }: Borrow
               )}
             />
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>Cancel</Button>
               <Button type="submit" disabled={isChecking || !!aiWarning}>
                 Confirm Borrow
               </Button>

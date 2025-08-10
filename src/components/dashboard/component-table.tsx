@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Pencil, Trash2, Search } from "lucide-react";
+import { MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Pencil, Trash2, Search, PackagePlus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -90,18 +90,35 @@ export default function ComponentTable({ components, onBorrow, onAddComponent, o
               {!minimal && <TableCell className="hidden md:table-cell">{component.category}</TableCell>}
               {!minimal && <TableCell className="hidden md:table-cell">{component.quantity}</TableCell>}
               <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button aria-haspopup="true" size="icon" variant="ghost">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Toggle menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem><Pencil className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
-                  </DropdownMenuContent>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                        aria-haspopup="true"
+                        size="icon"
+                        variant="ghost"
+                        >
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Toggle menu</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem
+                            disabled={component.status === "Borrowed"}
+                            onClick={() => handleBorrowClick(component)}
+                        >
+                            <PackagePlus className="mr-2 h-4 w-4" />
+                            Borrow
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
             </TableRow>
@@ -117,7 +134,7 @@ export default function ComponentTable({ components, onBorrow, onAddComponent, o
             {selectedComponent && (
                 <BorrowDialog
                     open={isBorrowDialogOpen}
-                    onOpenChange={setIsBorrowDialogOpen}
+                    onOpenChange={handleDialogClose}
                     component={selectedComponent}
                     onBorrow={(details) => {
                         onBorrow(selectedComponent, details);
@@ -130,6 +147,7 @@ export default function ComponentTable({ components, onBorrow, onAddComponent, o
   }
 
   return (
+    <>
     <Card>
       <CardHeader>
         <div className="flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row">
@@ -163,6 +181,7 @@ export default function ComponentTable({ components, onBorrow, onAddComponent, o
       <CardContent>
        {tableContent}
       </CardContent>
+      </Card>
       {selectedComponent && (
         <BorrowDialog
             open={isBorrowDialogOpen}
@@ -174,6 +193,6 @@ export default function ComponentTable({ components, onBorrow, onAddComponent, o
             }}
         />
       )}
-    </Card>
+    </>
   );
 }
