@@ -76,8 +76,8 @@ export default function DashboardPage() {
                             <CardDescription>Top 5 components in the inventory.</CardDescription>
                         </div>
                         <Link href="/components">
-                            <Button variant="outline" size="sm" className="gap-1">
-                                View all <ArrowRight className="h-4 w-4" />
+                            <Button variant="outline" size="sm">
+                                View all
                             </Button>
                         </Link>
                     </CardHeader>
