@@ -159,10 +159,10 @@ export function IssueItemDialog({ components, onIssue, open, onOpenChange }: Iss
                         <CommandGroup>
                           {components.map((component) => (
                             <CommandItem
-                              value={component.name}
+                              value={component.id || ""}
                               key={component.id}
-                              onSelect={() => {
-                                form.setValue("componentId", component.id || "");
+                              onSelect={(currentValue) => {
+                                form.setValue("componentId", currentValue === field.value ? "" : currentValue);
                                 setIsComponentPopoverOpen(false);
                               }}
                             >

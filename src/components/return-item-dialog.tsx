@@ -134,8 +134,8 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
                             <CommandItem
                               value={borrower}
                               key={borrower}
-                              onSelect={() => {
-                                form.setValue("borrowerName", borrower);
+                              onSelect={(currentValue) => {
+                                form.setValue("borrowerName", currentValue === field.value ? "" : currentValue);
                                 setIsBorrowerPopoverOpen(false);
                               }}
                             >
@@ -180,10 +180,10 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
                           <CommandGroup>
                             {componentsForBorrower.map((component) => (
                               <CommandItem
-                                value={component.name}
+                                value={component.id || ""}
                                 key={component.id}
-                                onSelect={() => {
-                                  form.setValue("componentId", component.id || "");
+                                onSelect={(currentValue) => {
+                                  form.setValue("componentId", currentValue === field.value ? "" : currentValue);
                                   setIsComponentPopoverOpen(false);
                                 }}
                               >
