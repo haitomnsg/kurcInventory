@@ -19,6 +19,7 @@ import { Search, PlusCircle, MinusCircle } from "lucide-react";
 import { IssueItemDialog } from "@/components/issue-item-dialog";
 import { ReturnItemDialog } from "@/components/return-item-dialog";
 import { Separator } from "@/components/ui/separator";
+import AuthGuard from "@/components/auth-guard";
 
 type EnrichedLog = Log & {
   expectedReturnDate?: string;
@@ -148,105 +149,107 @@ export default function LogsPage() {
 
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <div className="flex flex-col min-h-screen">
-          <Header onThemeChange={handleThemeChange} theme={theme} />
-          <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-6">
-            <Card className="bg-muted-background">
-                <CardContent className="p-4">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h3 className="text-lg font-medium">Transaction Controls</h3>
-                            <p className="text-sm text-muted-foreground">Issue a new item or process a return.</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" onClick={() => setIsIssueDialogOpen(true)}>
-                                <PlusCircle className="mr-2 h-4 w-4" /> Issue Item
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={() => setIsReturnDialogOpen(true)}>
-                                <MinusCircle className="mr-2 h-4 w-4" /> Return Item
-                            </Button>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+    <AuthGuard>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex flex-col min-h-screen">
+            <Header onThemeChange={handleThemeChange} theme={theme} />
+            <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-6">
+              <Card className="bg-muted-background">
+                  <CardContent className="p-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                              <h3 className="text-lg font-medium">Transaction Controls</h3>
+                              <p className="text-sm text-muted-foreground">Issue a new item or process a return.</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                              <Button variant="outline" size="sm" onClick={() => setIsIssueDialogOpen(true)}>
+                                  <PlusCircle className="mr-2 h-4 w-4" /> Issue Item
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => setIsReturnDialogOpen(true)}>
+                                  <MinusCircle className="mr-2 h-4 w-4" /> Return Item
+                              </Button>
+                          </div>
+                      </div>
+                  </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Transaction Logs</CardTitle>
-                <CardDescription>
-                    A log of all component borrows and returns.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                 <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <div className="relative w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="search"
-                            placeholder="Search logs..."
-                            className="w-full bg-background pl-9"
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>All</Button>
-                        <Button variant={filter === 'borrowed' ? 'default' : 'outline'} onClick={() => setFilter('borrowed')}>Borrowed</Button>
-                        <Button variant={filter === 'returned' ? 'default' : 'outline'} onClick={() => setFilter('returned')}>Returned</Button>
-                    </div>
-                </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Transaction Logs</CardTitle>
+                  <CardDescription>
+                      A log of all component borrows and returns.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                   <div className="flex flex-col sm:flex-row items-center gap-4">
+                      <div className="relative w-full">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                              type="search"
+                              placeholder="Search logs..."
+                              className="w-full bg-background pl-9"
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                      </div>
+                      <div className="flex items-center gap-2">
+                          <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>All</Button>
+                          <Button variant={filter === 'borrowed' ? 'default' : 'outline'} onClick={() => setFilter('borrowed')}>Borrowed</Button>
+                          <Button variant={filter === 'returned' ? 'default' : 'outline'} onClick={() => setFilter('returned')}>Returned</Button>
+                      </div>
+                  </div>
 
-                <Separator className="my-6" />
+                  <Separator className="my-6" />
 
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Component</TableHead>
-                      <TableHead>User</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Issue Date</TableHead>
-                      <TableHead>Return Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell className="font-medium">{log.componentName}</TableCell>
-                        <TableCell>{log.userName}</TableCell>
-                        <TableCell>
-                          <Badge variant={log.status === "Borrowed" ? "destructive" : "secondary"}>
-                            {log.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{format(new Date(log.timestamp), "PPP")}</TableCell>
-                        <TableCell>
-                          {log.expectedReturnDate
-                            ? format(new Date(log.expectedReturnDate), "PPP")
-                            : "N/A"}
-                        </TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Component</TableHead>
+                        <TableHead>User</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Issue Date</TableHead>
+                        <TableHead>Return Date</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </main>
-        </div>
-        <IssueItemDialog 
-            open={isIssueDialogOpen}
-            onOpenChange={setIsIssueDialogOpen}
-            components={availableComponents}
-            onIssue={handleIssueItem}
-        />
-        <ReturnItemDialog
-            open={isReturnDialogOpen}
-            onOpenChange={setIsReturnDialogOpen}
-            components={borrowedComponents}
-            onReturn={handleReturnItem}
-        />
-      </SidebarInset>
-    </SidebarProvider>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredLogs.map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell className="font-medium">{log.componentName}</TableCell>
+                          <TableCell>{log.userName}</TableCell>
+                          <TableCell>
+                            <Badge variant={log.status === "Borrowed" ? "destructive" : "secondary"}>
+                              {log.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{format(new Date(log.timestamp), "PPP")}</TableCell>
+                          <TableCell>
+                            {log.expectedReturnDate
+                              ? format(new Date(log.expectedReturnDate), "PPP")
+                              : "N/A"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </main>
+          </div>
+          <IssueItemDialog 
+              open={isIssueDialogOpen}
+              onOpenChange={setIsIssueDialogOpen}
+              components={availableComponents}
+              onIssue={handleIssueItem}
+          />
+          <ReturnItemDialog
+              open={isReturnDialogOpen}
+              onOpenChange={setIsReturnDialogOpen}
+              components={borrowedComponents}
+              onReturn={handleReturnItem}
+          />
+        </SidebarInset>
+      </SidebarProvider>
+    </AuthGuard>
   );
 }

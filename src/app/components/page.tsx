@@ -18,6 +18,7 @@ import CategoryManager from "@/components/dashboard/category-manager";
 import { ReturnItemDialog } from "@/components/return-item-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import AuthGuard from "@/components/auth-guard";
 
 export default function ComponentsPage() {
   const { toast } = useToast();
@@ -161,63 +162,65 @@ export default function ComponentsPage() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <div className="flex flex-col min-h-screen">
-          <Header
-            onThemeChange={handleThemeChange}
-            theme={theme}
-          />
-          <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-8">
-            <div>
-                {!componentsData ? renderLoadingSkeleton() : (
-                    <ComponentTable 
-                      components={filteredComponents.slice(0, 10)} 
-                      onAddComponent={() => setIsAddDialogOpen(true)}
-                      onSearch={setComponentSearchTerm}
-                    />
-                )}
-            </div>
-            <div>
-                {!categoriesData ? renderLoadingSkeleton() : (
-                    <CategoryManager 
-                        categories={filteredCategories}
-                        onAdd={handleAddCategory}
-                        onUpdate={handleUpdateCategory}
-                        onDelete={handleDeleteCategory}
-                        onSearch={setCategorySearchTerm}
-                    />
-                )}
-            </div>
-          </main>
-        </div>
-        <AddComponentDialog 
-            open={isAddDialogOpen}
-            onOpenChange={setIsAddDialogOpen}
-            onAddComponent={handleAddComponent}
-            categories={categoriesData || []}
-        />
-        {selectedComponent && componentsData && (
-            <ReturnItemDialog
-                open={isReturnDialogOpen}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setSelectedComponent(null);
-                    }
-                    setIsReturnDialogOpen(open);
-                }}
-                components={componentsData.filter(c => c.status === 'Borrowed')}
-                onReturn={(componentId, remarks) => {
-                    const componentToReturn = componentsData.find(c => c.id === componentId);
-                    if (componentToReturn) {
-                        handleReturn(componentToReturn, remarks);
-                    }
-                }}
-                selectedComponentId={selectedComponent.id}
+    <AuthGuard>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex flex-col min-h-screen">
+            <Header
+              onThemeChange={handleThemeChange}
+              theme={theme}
             />
-        )}
-      </SidebarInset>
-    </SidebarProvider>
+            <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-8">
+              <div>
+                  {!componentsData ? renderLoadingSkeleton() : (
+                      <ComponentTable 
+                        components={filteredComponents.slice(0, 10)} 
+                        onAddComponent={() => setIsAddDialogOpen(true)}
+                        onSearch={setComponentSearchTerm}
+                      />
+                  )}
+              </div>
+              <div>
+                  {!categoriesData ? renderLoadingSkeleton() : (
+                      <CategoryManager 
+                          categories={filteredCategories}
+                          onAdd={handleAddCategory}
+                          onUpdate={handleUpdateCategory}
+                          onDelete={handleDeleteCategory}
+                          onSearch={setCategorySearchTerm}
+                      />
+                  )}
+              </div>
+            </main>
+          </div>
+          <AddComponentDialog 
+              open={isAddDialogOpen}
+              onOpenChange={setIsAddDialogOpen}
+              onAddComponent={handleAddComponent}
+              categories={categoriesData || []}
+          />
+          {selectedComponent && componentsData && (
+              <ReturnItemDialog
+                  open={isReturnDialogOpen}
+                  onOpenChange={(open) => {
+                      if (!open) {
+                          setSelectedComponent(null);
+                      }
+                      setIsReturnDialogOpen(open);
+                  }}
+                  components={componentsData.filter(c => c.status === 'Borrowed')}
+                  onReturn={(componentId, remarks) => {
+                      const componentToReturn = componentsData.find(c => c.id === componentId);
+                      if (componentToReturn) {
+                          handleReturn(componentToReturn, remarks);
+                      }
+                  }}
+                  selectedComponentId={selectedComponent.id}
+              />
+          )}
+        </SidebarInset>
+      </SidebarProvider>
+    </AuthGuard>
   );
 }

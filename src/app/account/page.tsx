@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import AuthGuard from "@/components/auth-guard";
 
 const accountSchema = z.object({
     name: z.string().min(1, "Name is required."),
@@ -83,98 +84,100 @@ export default function AccountPage() {
     };
 
     return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <div className="flex flex-col min-h-screen">
-                    <Header onThemeChange={handleThemeChange} theme={theme} />
-                    <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-8">
-                        <div className="grid gap-8 md:grid-cols-2">
-                             <Card>
-                                <CardHeader>
-                                    <CardTitle>Account Information</CardTitle>
-                                    <CardDescription>Update your personal details.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Form {...accountForm}>
-                                        <form onSubmit={accountForm.handleSubmit(onAccountSubmit)} className="space-y-4">
-                                            <FormField
-                                                control={accountForm.control}
-                                                name="name"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Full Name</FormLabel>
-                                                        <FormControl><Input {...field} /></FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={accountForm.control}
-                                                name="email"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Email Address</FormLabel>
-                                                        <FormControl><Input type="email" {...field} /></FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <Button type="submit">Save Changes</Button>
-                                        </form>
-                                    </Form>
-                                </CardContent>
-                            </Card>
-                             <Card>
-                                <CardHeader>
-                                    <CardTitle>Change Password</CardTitle>
-                                    <CardDescription>Update your password. Make sure it's a strong one.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Form {...passwordForm}>
-                                        <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
-                                            <FormField
-                                                control={passwordForm.control}
-                                                name="currentPassword"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Current Password</FormLabel>
-                                                        <FormControl><Input type="password" {...field} /></FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={passwordForm.control}
-                                                name="newPassword"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>New Password</FormLabel>
-                                                        <FormControl><Input type="password" {...field} /></FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={passwordForm.control}
-                                                name="confirmPassword"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Confirm New Password</FormLabel>
-                                                        <FormControl><Input type="password" {...field} /></FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <Button type="submit">Update Password</Button>
-                                        </form>
-                                    </Form>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </main>
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+        <AuthGuard>
+            <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
+                    <div className="flex flex-col min-h-screen">
+                        <Header onThemeChange={handleThemeChange} theme={theme} />
+                        <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-8">
+                            <div className="grid gap-8 md:grid-cols-2">
+                                 <Card>
+                                    <CardHeader>
+                                        <CardTitle>Account Information</CardTitle>
+                                        <CardDescription>Update your personal details.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Form {...accountForm}>
+                                            <form onSubmit={accountForm.handleSubmit(onAccountSubmit)} className="space-y-4">
+                                                <FormField
+                                                    control={accountForm.control}
+                                                    name="name"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Full Name</FormLabel>
+                                                            <FormControl><Input {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={accountForm.control}
+                                                    name="email"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Email Address</FormLabel>
+                                                            <FormControl><Input type="email" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <Button type="submit">Save Changes</Button>
+                                            </form>
+                                        </Form>
+                                    </CardContent>
+                                </Card>
+                                 <Card>
+                                    <CardHeader>
+                                        <CardTitle>Change Password</CardTitle>
+                                        <CardDescription>Update your password. Make sure it's a strong one.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Form {...passwordForm}>
+                                            <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                                                <FormField
+                                                    control={passwordForm.control}
+                                                    name="currentPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Current Password</FormLabel>
+                                                            <FormControl><Input type="password" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={passwordForm.control}
+                                                    name="newPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>New Password</FormLabel>
+                                                            <FormControl><Input type="password" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={passwordForm.control}
+                                                    name="confirmPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Confirm New Password</FormLabel>
+                                                            <FormControl><Input type="password" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <Button type="submit">Update Password</Button>
+                                            </form>
+                                        </Form>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </main>
+                    </div>
+                </SidebarInset>
+            </SidebarProvider>
+        </AuthGuard>
     );
 }

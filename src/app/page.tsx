@@ -15,7 +15,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import ComponentTable from "@/components/dashboard/component-table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import AuthGuard from "@/components/auth-guard";
 
 export default function DashboardPage() {
   const { toast } = useToast();
@@ -57,52 +57,54 @@ export default function DashboardPage() {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <div className="flex flex-col min-h-screen">
-          <Header
-            onThemeChange={handleThemeChange}
-            theme={theme}
-          />
-          <main className="flex-1 p-4 md:p-6 lg:p-8">
-            <InventorySummary components={componentsData} />
-            
-            <div className="mt-8 grid gap-8 md:grid-cols-2">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
-                            <CardTitle>Recent Activity</CardTitle>
-                            <CardDescription>A log of the last 5 component borrows and returns.</CardDescription>
-                        </div>
-                         <Link href="/logs">
-                            <Button variant="outline" size="sm">View all</Button>
-                        </Link>
-                    </CardHeader>
-                    <CardContent>
-                        <RecentActivity logs={logsData.slice(0,5)} />
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
-                            <CardTitle>Inventory Overview</CardTitle>
-                            <CardDescription>Top 5 components in the inventory.</CardDescription>
-                        </div>
-                        <Link href="/components">
-                            <Button variant="outline" size="sm">
-                                View all
-                            </Button>
-                        </Link>
-                    </CardHeader>
-                    <CardContent>
-                        <ComponentTable components={componentsData.slice(0,5)} onBorrow={handleBorrow} minimal />
-                    </CardContent>
-                </Card>
-            </div>
-          </main>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <AuthGuard>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex flex-col min-h-screen">
+            <Header
+              onThemeChange={handleThemeChange}
+              theme={theme}
+            />
+            <main className="flex-1 p-4 md:p-6 lg:p-8">
+              <InventorySummary components={componentsData} />
+              
+              <div className="mt-8 grid gap-8 md:grid-cols-2">
+                  <Card>
+                      <CardHeader className="flex flex-row items-center justify-between">
+                          <div>
+                              <CardTitle>Recent Activity</CardTitle>
+                              <CardDescription>A log of the last 5 component borrows and returns.</CardDescription>
+                          </div>
+                           <Link href="/logs">
+                              <Button variant="outline" size="sm">View all</Button>
+                          </Link>
+                      </CardHeader>
+                      <CardContent>
+                          <RecentActivity logs={logsData.slice(0,5)} />
+                      </CardContent>
+                  </Card>
+                  <Card>
+                      <CardHeader className="flex flex-row items-center justify-between">
+                          <div>
+                              <CardTitle>Inventory Overview</CardTitle>
+                              <CardDescription>Top 5 components in the inventory.</CardDescription>
+                          </div>
+                          <Link href="/components">
+                              <Button variant="outline" size="sm">
+                                  View all
+                              </Button>
+                          </Link>
+                      </CardHeader>
+                      <CardContent>
+                          <ComponentTable components={componentsData.slice(0,5)} onBorrow={handleBorrow} minimal />
+                      </CardContent>
+                  </Card>
+              </div>
+            </main>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </AuthGuard>
   );
 }
