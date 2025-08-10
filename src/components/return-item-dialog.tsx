@@ -160,6 +160,7 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
                             variant="outline"
                             role="combobox"
                             className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                            disabled={!componentsForBorrower.length}
                           >
                             {field.value ? components.find(c => c.id === field.value)?.name : "Select a component"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -169,7 +170,7 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
                       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                         <Command>
                           <CommandInput placeholder="Search component..." />
-                          <CommandEmpty>No component found.</CommandEmpty>
+                          <CommandEmpty>No component found for this borrower.</CommandEmpty>
                           <CommandGroup>
                             {componentsForBorrower.map((component) => (
                               <CommandItem

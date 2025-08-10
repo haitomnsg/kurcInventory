@@ -1,6 +1,6 @@
 
 import { db } from './firebase';
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, limit } from 'firebase/firestore';
 import type { Component, Category, Log, User } from './types';
 
 // Collection references
@@ -21,7 +21,8 @@ export const fetchCategories = async (): Promise<Category[]> => {
 };
 
 export const fetchLogs = async (): Promise<Log[]> => {
-    const snapshot = await getDocs(logsCollection);
+    const q = query(logsCollection, orderBy('timestamp', 'desc'), limit(100));
+    const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Log));
 };
 
@@ -49,7 +50,7 @@ export const addUser = async (user: Omit<User, 'id'>) => {
 
 
 // Update operations
-export const updateComponent = async (id: string, data: Partial<Component>) => {
+export const updateComponent = async (id: string, data: Partial<Omit<Component, 'id'>>) => {
     const componentDoc = doc(db, 'components', id);
     return await updateDoc(componentDoc, data);
 };

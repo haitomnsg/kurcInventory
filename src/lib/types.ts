@@ -21,7 +21,7 @@ export type Log = {
   contactNumber?: string;
   status: 'Borrowed' | 'Returned';
   timestamp: string;
-  name?: string; // from previous mock data, can be removed if not used
+  remarks?: string;
 };
 
 export type User = {

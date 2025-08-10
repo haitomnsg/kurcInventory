@@ -2,8 +2,9 @@
 "use client";
 
 import * as React from "react";
+import useSWR, { mutate } from 'swr';
 import type { Log, Component } from "@/lib/types";
-import { mockLogs, mockComponents } from "@/lib/data";
+import { fetchLogs, fetchComponents, addLog, updateComponent } from "@/lib/data-service";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,28 +21,14 @@ import { IssueItemDialog } from "@/components/issue-item-dialog";
 import { ReturnItemDialog } from "@/components/return-item-dialog";
 import { Separator } from "@/components/ui/separator";
 import AuthGuard from "@/components/auth-guard";
-
-type EnrichedLog = Log & {
-  expectedReturnDate?: string;
-};
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LogsPage() {
   const { toast } = useToast();
   const [theme, setTheme] = React.useState("light");
-  const [componentsData, setComponentsData] = React.useState<Component[]>(mockComponents);
   
-  const [logsData, setLogsData] = React.useState<EnrichedLog[]>(() => {
-    return mockLogs.map(log => {
-        if (log.status === 'Borrowed') {
-            const component = mockComponents.find(c => c.name === log.componentName && c.status === 'Borrowed');
-            return {
-                ...log,
-                expectedReturnDate: component?.expectedReturnDate
-            }
-        }
-        return log;
-    })
-  });
+  const { data: logsData, error: logsError } = useSWR<Log[]>('logs', fetchLogs);
+  const { data: componentsData, error: componentsError } = useSWR<Component[]>('components', fetchComponents);
 
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filter, setFilter] = React.useState<"all" | "borrowed" | "returned">("all");
@@ -57,96 +44,120 @@ export default function LogsPage() {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
-  const handleIssueItem = (details: { componentId: string; userName: string; purpose: string; expectedReturnDate: Date; }) => {
-    const component = componentsData.find(c => c.id === details.componentId);
-    if (!component) return;
+  const handleIssueItem = async (details: { componentId: string; userName: string; purpose: string; expectedReturnDate: Date; contactNumber: string; quantity: number }) => {
+    const component = componentsData?.find(c => c.id === details.componentId);
+    if (!component || !component.id) return;
 
-    setComponentsData(prev =>
-      prev.map(c =>
-        c.id === details.componentId ? { ...c, status: "Borrowed", borrowedBy: details.userName, expectedReturnDate: details.expectedReturnDate.toISOString().split('T')[0] } : c
-      )
-    );
-    const newLog: EnrichedLog = {
-      id: (logsData.length + 1).toString(),
-      componentName: component.name,
-      userName: details.userName,
-      status: "Borrowed",
-      timestamp: new Date().toISOString(),
-      expectedReturnDate: details.expectedReturnDate.toISOString().split('T')[0]
-    };
-    setLogsData(prev => [newLog, ...prev]);
+    try {
+        // 1. Update component in Firestore
+        await updateComponent(component.id, { 
+            status: "Borrowed", 
+            borrowedBy: details.userName, 
+            expectedReturnDate: details.expectedReturnDate.toISOString().split('T')[0],
+            // In a real scenario, you'd handle quantity decrease here.
+            // For this app's data model, one component entry can be borrowed by one person.
+        });
 
-    toast({
-      title: "Component Issued",
-      description: `${component.name} has been issued to ${details.userName}.`,
-    });
-    setIsIssueDialogOpen(false);
+        // 2. Add a new log entry in Firestore
+        const newLog: Omit<Log, 'id'> = {
+            componentName: component.name,
+            userName: details.userName,
+            contactNumber: details.contactNumber,
+            status: "Borrowed",
+            timestamp: new Date().toISOString(),
+        };
+        await addLog(newLog);
+
+        // 3. Revalidate SWR caches
+        mutate('components');
+        mutate('logs');
+
+        toast({
+            title: "Component Issued",
+            description: `${component.name} has been issued to ${details.userName}.`,
+        });
+        setIsIssueDialogOpen(false);
+    } catch (error) {
+        console.error("Failed to issue component:", error);
+        toast({ title: "Error", description: "Failed to issue component.", variant: "destructive" });
+    }
   }
 
-  const handleReturnItem = (componentId: string, remarks: string) => {
-    const component = componentsData.find(c => c.id === componentId);
-    if (!component) return;
-    
-    setComponentsData(prev =>
-        prev.map(c =>
-            c.id === componentId ? { ...c, status: 'Available', borrowedBy: undefined, expectedReturnDate: undefined } : c
-        )
-    );
-     const newLog: EnrichedLog = {
-      id: (logsData.length + 1).toString(),
-      componentName: component.name,
-      userName: component.borrowedBy || 'Unknown',
-      status: "Returned",
-      timestamp: new Date().toISOString(),
-    };
-    setLogsData(prev => [newLog, ...prev]);
+  const handleReturnItem = async (component: Component, remarks: string) => {
+    if (!component || !component.id) return;
 
-    toast({
-      title: "Component Returned",
-      description: `${component.name} has been returned.`,
-    });
-    setIsReturnDialogOpen(false);
+    try {
+        // 1. Update component in Firestore
+        await updateComponent(component.id, { 
+            status: 'Available', 
+            borrowedBy: undefined, 
+            expectedReturnDate: undefined 
+        });
+        
+        // 2. Add a new log entry
+        const newLog: Omit<Log, 'id'> = {
+            componentName: component.name,
+            userName: component.borrowedBy || 'Unknown',
+            status: "Returned",
+            timestamp: new Date().toISOString(),
+            remarks: remarks
+        };
+        await addLog(newLog);
+        
+        // 3. Revalidate SWR caches
+        mutate('components');
+        mutate('logs');
+
+        toast({
+            title: "Component Returned",
+            description: `${component.name} has been returned.`,
+        });
+        setIsReturnDialogOpen(false);
+    } catch (error) {
+        console.error("Failed to return component:", error);
+        toast({ title: "Error", description: "Failed to return component.", variant: "destructive" });
+    }
   }
+
 
   const filteredLogs = React.useMemo(() => {
-    let logs = [...logsData];
-
-    // Re-enrich logs with latest component data
-    logs = logs.map(log => {
-      if (log.status === 'Borrowed') {
-        const component = componentsData.find(c => c.name === log.componentName && c.status === 'Borrowed');
-        // if component is not found among borrowed, it means it was returned.
-        // But we might want to keep the log.
-        // For this mock, let's just use what's there.
-        return {
-          ...log,
-          expectedReturnDate: component?.expectedReturnDate
-        }
-      }
-      return log;
-    })
-
-
-    return logs
+    if (!logsData) return [];
+    return logsData
       .filter((log) => {
         if (filter === "all") return true;
-        if (filter === 'borrowed') {
-            const component = componentsData.find(c => c.name === log.componentName);
-            return log.status.toLowerCase() === filter && component?.status === 'Borrowed';
-        }
         return log.status.toLowerCase() === filter;
       })
       .filter(
         (log) =>
           log.componentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           log.userName.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-  }, [logsData, searchTerm, filter, componentsData]);
+      );
+  }, [logsData, searchTerm, filter]);
 
-  const availableComponents = React.useMemo(() => componentsData.filter(c => c.status === 'Available'), [componentsData]);
-  const borrowedComponents = React.useMemo(() => componentsData.filter(c => c.status === 'Borrowed'), [componentsData]);
+  const availableComponents = React.useMemo(() => componentsData?.filter(c => c.status === 'Available') || [], [componentsData]);
+  const borrowedComponents = React.useMemo(() => componentsData?.filter(c => c.status === 'Borrowed') || [], [componentsData]);
+  
+  const isLoading = !logsData && !logsError || !componentsData && !componentsError;
 
+  const renderLoadingSkeleton = () => (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-8 w-1/4" />
+        <Skeleton className="h-4 w-1/2" />
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+            <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="space-y-2 pt-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <AuthGuard>
@@ -164,10 +175,10 @@ export default function LogsPage() {
                               <p className="text-sm text-muted-foreground">Issue a new item or process a return.</p>
                           </div>
                           <div className="flex items-center gap-2">
-                              <Button variant="outline" size="sm" onClick={() => setIsIssueDialogOpen(true)}>
+                              <Button variant="outline" size="sm" onClick={() => setIsIssueDialogOpen(true)} disabled={isLoading}>
                                   <PlusCircle className="mr-2 h-4 w-4" /> Issue Item
                               </Button>
-                              <Button variant="outline" size="sm" onClick={() => setIsReturnDialogOpen(true)}>
+                              <Button variant="outline" size="sm" onClick={() => setIsReturnDialogOpen(true)} disabled={isLoading}>
                                   <MinusCircle className="mr-2 h-4 w-4" /> Return Item
                               </Button>
                           </div>
@@ -175,65 +186,73 @@ export default function LogsPage() {
                   </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Transaction Logs</CardTitle>
-                  <CardDescription>
-                      A log of all component borrows and returns.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                   <div className="flex flex-col sm:flex-row items-center gap-4">
-                      <div className="relative w-full">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input
-                              type="search"
-                              placeholder="Search logs..."
-                              className="w-full bg-background pl-9"
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                          />
-                      </div>
-                      <div className="flex items-center gap-2">
-                          <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>All</Button>
-                          <Button variant={filter === 'borrowed' ? 'default' : 'outline'} onClick={() => setFilter('borrowed')}>Borrowed</Button>
-                          <Button variant={filter === 'returned' ? 'default' : 'outline'} onClick={() => setFilter('returned')}>Returned</Button>
-                      </div>
-                  </div>
+              {isLoading ? renderLoadingSkeleton() : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Transaction Logs</CardTitle>
+                    <CardDescription>
+                        A log of all component borrows and returns.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                     <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <div className="relative w-full">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Search logs..."
+                                className="w-full bg-background pl-9"
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>All</Button>
+                            <Button variant={filter === 'borrowed' ? 'default' : 'outline'} onClick={() => setFilter('borrowed')}>Borrowed</Button>
+                            <Button variant={filter === 'returned' ? 'default' : 'outline'} onClick={() => setFilter('returned')}>Returned</Button>
+                        </div>
+                    </div>
 
-                  <Separator className="my-6" />
+                    <Separator className="my-6" />
 
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Component</TableHead>
-                        <TableHead>User</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Issue Date</TableHead>
-                        <TableHead>Return Date</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredLogs.map((log) => (
-                        <TableRow key={log.id}>
-                          <TableCell className="font-medium">{log.componentName}</TableCell>
-                          <TableCell>{log.userName}</TableCell>
-                          <TableCell>
-                            <Badge variant={log.status === "Borrowed" ? "destructive" : "secondary"}>
-                              {log.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{format(new Date(log.timestamp), "PPP")}</TableCell>
-                          <TableCell>
-                            {log.expectedReturnDate
-                              ? format(new Date(log.expectedReturnDate), "PPP")
-                              : "N/A"}
-                          </TableCell>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Component</TableHead>
+                          <TableHead>User</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Remarks</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredLogs.length > 0 ? (
+                            filteredLogs.map((log) => (
+                                <TableRow key={log.id}>
+                                <TableCell className="font-medium">{log.componentName}</TableCell>
+                                <TableCell>{log.userName}</TableCell>
+                                <TableCell>
+                                    <Badge variant={log.status === "Borrowed" ? "destructive" : "secondary"}>
+                                    {log.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>{format(new Date(log.timestamp), "PPP p")}</TableCell>
+                                <TableCell>
+                                    {log.remarks || "N/A"}
+                                </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={5} className="text-center h-24">
+                                    No records found.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )}
             </main>
           </div>
           <IssueItemDialog 
@@ -246,7 +265,12 @@ export default function LogsPage() {
               open={isReturnDialogOpen}
               onOpenChange={setIsReturnDialogOpen}
               components={borrowedComponents}
-              onReturn={handleReturnItem}
+              onReturn={(componentId, remarks) => {
+                  const componentToReturn = borrowedComponents.find(c => c.id === componentId);
+                  if (componentToReturn) {
+                      handleReturnItem(componentToReturn, remarks);
+                  }
+              }}
           />
         </SidebarInset>
       </SidebarProvider>
