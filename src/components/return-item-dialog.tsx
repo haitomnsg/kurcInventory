@@ -40,16 +40,23 @@ type ReturnItemDialogProps = {
   onReturn: (componentId: string, remarks: string) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  selectedComponentId?: string;
 };
 
-export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: ReturnItemDialogProps) {
+export function ReturnItemDialog({ components, onReturn, open, onOpenChange, selectedComponentId }: ReturnItemDialogProps) {
   const form = useForm<ReturnItemFormValues>({
     resolver: zodResolver(returnItemSchema),
     defaultValues: {
-        componentId: "",
+        componentId: selectedComponentId || "",
         remarks: ""
     }
   });
+  
+  React.useEffect(() => {
+    if (selectedComponentId) {
+        form.setValue("componentId", selectedComponentId);
+    }
+  }, [selectedComponentId, form])
 
   const onSubmit = (data: ReturnItemFormValues) => {
     onReturn(data.componentId, data.remarks || "");
@@ -57,7 +64,7 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
 
   const handleOpenChange = (isOpen: boolean) => {
     if(!isOpen) {
-      form.reset();
+      form.reset({ componentId: "", remarks: ""});
     }
     onOpenChange(isOpen);
   }
@@ -79,7 +86,7 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Borrowed Component</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!selectedComponentId}>
                         <FormControl>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a component" />
@@ -123,6 +130,3 @@ export function ReturnItemDialog({ components, onReturn, open, onOpenChange }: R
     </Dialog>
   );
 }
-
-
-    

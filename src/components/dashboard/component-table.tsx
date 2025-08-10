@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Pencil, Trash2, Search, PackagePlus } from "lucide-react";
+import { MoreHorizontal, PlusCircle, CheckCircle2, XCircle, Pencil, Trash2, Search, PackagePlus, PackageCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,12 +29,13 @@ import { Input } from "../ui/input";
 type ComponentTableProps = {
   components: Component[];
   onBorrow: (component: Component, details: { expectedReturnDate: Date; purpose:string }) => void;
+  onReturn: (component: Component) => void;
   onAddComponent?: () => void;
   onSearch?: (term: string) => void;
   minimal?: boolean;
 };
 
-export default function ComponentTable({ components, onBorrow, onAddComponent, onSearch, minimal = false }: ComponentTableProps) {
+export default function ComponentTable({ components, onBorrow, onReturn, onAddComponent, onSearch, minimal = false }: ComponentTableProps) {
   const [isBorrowDialogOpen, setIsBorrowDialogOpen] = React.useState(false);
   const [selectedComponent, setSelectedComponent] = React.useState<Component | null>(null);
 
@@ -42,6 +43,10 @@ export default function ComponentTable({ components, onBorrow, onAddComponent, o
     setSelectedComponent(component);
     setIsBorrowDialogOpen(true);
   };
+
+  const handleReturnClick = (component: Component) => {
+    onReturn(component);
+  }
   
   const handleDialogClose = () => {
     setIsBorrowDialogOpen(false);
@@ -103,13 +108,17 @@ export default function ComponentTable({ components, onBorrow, onAddComponent, o
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            disabled={component.status === "Borrowed"}
-                            onClick={() => handleBorrowClick(component)}
-                        >
-                            <PackagePlus className="mr-2 h-4 w-4" />
-                            Borrow
-                        </DropdownMenuItem>
+                        {component.status === 'Available' ? (
+                            <DropdownMenuItem onClick={() => handleBorrowClick(component)}>
+                                <PackagePlus className="mr-2 h-4 w-4" />
+                                Borrow
+                            </DropdownMenuItem>
+                        ) : (
+                             <DropdownMenuItem onClick={() => handleReturnClick(component)}>
+                                <PackageCheck className="mr-2 h-4 w-4" />
+                                Return
+                            </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem>
                             <Pencil className="mr-2 h-4 w-4" />
                             Edit

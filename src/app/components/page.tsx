@@ -12,6 +12,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/dashboard/sidebar";
 import { AddComponentDialog } from "@/components/add-component-dialog";
 import CategoryManager from "@/components/dashboard/category-manager";
+import { ReturnItemDialog } from "@/components/return-item-dialog";
 
 export default function ComponentsPage() {
   const { toast } = useToast();
@@ -22,6 +23,8 @@ export default function ComponentsPage() {
   const [componentSearchTerm, setComponentSearchTerm] = React.useState("");
   const [categorySearchTerm, setCategorySearchTerm] = React.useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const [isReturnDialogOpen, setIsReturnDialogOpen] = React.useState(false);
+  const [selectedComponent, setSelectedComponent] = React.useState<Component | null>(null);
 
   const user = mockUsers.admin;
 
@@ -55,6 +58,29 @@ export default function ComponentsPage() {
       description: `${component.name} has been successfully borrowed.`,
     });
   };
+  
+  const handleReturn = (component: Component, remarks: string) => {
+     setComponentsData(prev =>
+        prev.map(c =>
+            c.id === component.id ? { ...c, status: 'Available', borrowedBy: undefined, expectedReturnDate: undefined } : c
+        )
+    );
+     const newLog: Log = {
+      id: (logsData.length + 1).toString(),
+      componentName: component.name,
+      userName: component.borrowedBy || 'Unknown',
+      status: "Returned",
+      timestamp: new Date().toISOString(),
+    };
+    setLogsData(prev => [newLog, ...prev]);
+
+    toast({
+      title: "Component Returned",
+      description: `${component.name} has been returned.`,
+    });
+    setIsReturnDialogOpen(false);
+    setSelectedComponent(null);
+  }
 
   const handleAddComponent = (newComponent: Omit<Component, 'id' | 'status' | 'imageUrl' | 'aiHint'>) => {
     const componentToAdd: Component = {
@@ -98,6 +124,11 @@ export default function ComponentsPage() {
       category.name.toLowerCase().includes(categorySearchTerm.toLowerCase())
     );
   }, [categoriesData, categorySearchTerm]);
+  
+  const handleOpenReturnDialog = (component: Component) => {
+    setSelectedComponent(component);
+    setIsReturnDialogOpen(true);
+  }
 
   return (
     <SidebarProvider>
@@ -113,6 +144,7 @@ export default function ComponentsPage() {
                 <ComponentTable 
                   components={filteredComponents} 
                   onBorrow={handleBorrow} 
+                  onReturn={handleOpenReturnDialog}
                   onAddComponent={() => setIsAddDialogOpen(true)}
                   onSearch={setComponentSearchTerm}
                 />
@@ -134,6 +166,25 @@ export default function ComponentsPage() {
             onAddComponent={handleAddComponent}
             categories={categoriesData}
         />
+        {selectedComponent && (
+            <ReturnItemDialog
+                open={isReturnDialogOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setSelectedComponent(null);
+                    }
+                    setIsReturnDialogOpen(open);
+                }}
+                components={componentsData.filter(c => c.status === 'Borrowed')}
+                onReturn={(componentId, remarks) => {
+                    const componentToReturn = componentsData.find(c => c.id === componentId);
+                    if (componentToReturn) {
+                        handleReturn(componentToReturn, remarks);
+                    }
+                }}
+                selectedComponentId={selectedComponent.id}
+            />
+        )}
       </SidebarInset>
     </SidebarProvider>
   );
