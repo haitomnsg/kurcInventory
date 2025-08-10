@@ -153,16 +153,9 @@ export default function LogsPage() {
       <SidebarInset>
         <div className="flex flex-col min-h-screen">
           <Header onThemeChange={handleThemeChange} theme={theme} />
-          <main className="flex-1 p-4 md:p-6 lg:p-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Transaction Logs</CardTitle>
-                <CardDescription>
-                    A log of all component borrows and returns.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="p-4 border rounded-lg mb-6">
+          <main className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col gap-6">
+            <Card className="bg-muted-background">
+                <CardContent className="p-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h3 className="text-lg font-medium">Transaction Controls</h3>
@@ -177,8 +170,17 @@ export default function LogsPage() {
                             </Button>
                         </div>
                     </div>
-                </div>
+                </CardContent>
+            </Card>
 
+            <Card>
+              <CardHeader>
+                <CardTitle>Transaction Logs</CardTitle>
+                <CardDescription>
+                    A log of all component borrows and returns.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
                  <div className="flex flex-col sm:flex-row items-center gap-4">
                     <div className="relative w-full">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
