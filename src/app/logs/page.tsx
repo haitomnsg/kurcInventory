@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, PlusCircle, MinusCircle } from "lucide-react";
 import { IssueItemDialog } from "@/components/issue-item-dialog";
 import { ReturnItemDialog } from "@/components/return-item-dialog";
+import { Separator } from "@/components/ui/separator";
 
 type EnrichedLog = Log & {
   expectedReturnDate?: string;
@@ -155,23 +156,30 @@ export default function LogsPage() {
           <main className="flex-1 p-4 md:p-6 lg:p-8">
             <Card>
               <CardHeader>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <CardTitle>Transaction Logs</CardTitle>
-                        <CardDescription>
-                            A log of all component borrows and returns.
-                        </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setIsIssueDialogOpen(true)}>
-                            <PlusCircle className="mr-2 h-4 w-4" /> Issue Item
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => setIsReturnDialogOpen(true)}>
-                            <MinusCircle className="mr-2 h-4 w-4" /> Return Item
-                        </Button>
+                <CardTitle>Transaction Logs</CardTitle>
+                <CardDescription>
+                    A log of all component borrows and returns.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="p-4 border rounded-lg mb-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h3 className="text-lg font-medium">Transaction Controls</h3>
+                            <p className="text-sm text-muted-foreground">Issue a new item or process a return.</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" onClick={() => setIsIssueDialogOpen(true)}>
+                                <PlusCircle className="mr-2 h-4 w-4" /> Issue Item
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => setIsReturnDialogOpen(true)}>
+                                <MinusCircle className="mr-2 h-4 w-4" /> Return Item
+                            </Button>
+                        </div>
                     </div>
                 </div>
-                 <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
+
+                 <div className="flex flex-col sm:flex-row items-center gap-4">
                     <div className="relative w-full">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -187,8 +195,9 @@ export default function LogsPage() {
                         <Button variant={filter === 'returned' ? 'default' : 'outline'} onClick={() => setFilter('returned')}>Returned</Button>
                     </div>
                 </div>
-              </CardHeader>
-              <CardContent>
+
+                <Separator className="my-6" />
+
                 <Table>
                   <TableHeader>
                     <TableRow>
