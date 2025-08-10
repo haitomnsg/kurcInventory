@@ -93,9 +93,7 @@ export default function CategoryManager({ categories, onAdd, onUpdate, onDelete,
                 <TableHeader>
                 <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead>
-                    <span className="sr-only">Actions</span>
-                    </TableHead>
+                    <TableHead>Action</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
