@@ -62,12 +62,11 @@ export default function ComponentsPage() {
     setSelectedComponent(null);
   }
 
-  const handleAddComponent = async (newComponent: Omit<Component, 'id' | 'status' | 'imageUrl' | 'aiHint'>) => {
+  const handleAddComponent = async (newComponent: Omit<Component, 'id' | 'status' | 'aiHint'>) => {
     try {
         const componentToAdd: Omit<Component, 'id'> = {
             ...newComponent,
             status: "Available",
-            imageUrl: "https://placehold.co/100x100.png",
             aiHint: `${newComponent.name.toLowerCase()} ${newComponent.category.toLowerCase()}`.trim(),
         };
         await addComponent(componentToAdd);

@@ -6,7 +6,7 @@ export type Component = {
   quantity: number;
   status: 'Available' | 'Borrowed';
   condition: 'New' | 'Good' | 'Fair' | 'Poor';
-  imageUrl: string;
+  imageUrl?: string;
   borrowedBy?: string;
   borrowDate?: string;
   expectedReturnDate?: string;
