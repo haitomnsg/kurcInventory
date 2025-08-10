@@ -39,7 +39,7 @@ export default function RecentActivity({ logs }: RecentActivityProps) {
                     {log.status}
                 </Badge>
                 </TableCell>
-                <TableCell>{format(new Date(log.timestamp), "PPP")}</TableCell>
+                <TableCell>{format(new Date(log.issueDate), "PPP")}</TableCell>
             </TableRow>
             ))
         ) : (
