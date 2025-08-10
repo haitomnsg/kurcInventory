@@ -30,7 +30,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const addComponentSchema = z.object({
   name: z.string().min(1, "Name is required."),
   category: z.string().min(1, "Category is required."),
-  quantity: z.coerce.number().min(1, "Quantity must be at least 1."),
+  totalQuantity: z.coerce.number().min(1, "Quantity must be at least 1."),
   condition: z.enum(["New", "Good", "Fair", "Poor"]),
   description: z.string().min(1, "Description is required."),
 });
@@ -50,7 +50,7 @@ export function AddComponentDialog({ onAddComponent, open, onOpenChange, categor
     defaultValues: {
       name: "",
       category: "",
-      quantity: 1,
+      totalQuantity: 1,
       condition: "Good",
       description: "",
     },
@@ -112,10 +112,10 @@ export function AddComponentDialog({ onAddComponent, open, onOpenChange, categor
                 />
                 <FormField
                 control={form.control}
-                name="quantity"
+                name="totalQuantity"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Quantity</FormLabel>
+                    <FormLabel>Total Quantity</FormLabel>
                     <FormControl>
                         <Input type="number" {...field} />
                     </FormControl>

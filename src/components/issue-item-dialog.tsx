@@ -139,7 +139,7 @@ export function IssueItemDialog({ components, onIssue, open, onOpenChange }: Iss
                         <SelectContent>
                             {components.map(component => (
                                 <SelectItem key={component.id} value={component.id!}>
-                                    {component.name} ({component.quantity} available)
+                                    {component.name} ({component.availableQuantity} available)
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -153,7 +153,7 @@ export function IssueItemDialog({ components, onIssue, open, onOpenChange }: Iss
                 name="quantity"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Quantity</FormLabel>
+                    <FormLabel>Quantity to Issue</FormLabel>
                     <FormControl>
                         <Input type="number" {...field} />
                     </FormControl>

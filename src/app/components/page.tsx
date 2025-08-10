@@ -53,11 +53,11 @@ export default function ComponentsPage() {
     setIsDeleteDialogOpen(true);
   }
 
-  const handleAddComponent = async (newComponent: Omit<Component, 'id' | 'status' | 'aiHint'>) => {
+  const handleAddComponent = async (newComponent: Omit<Component, 'id' | 'aiHint' | 'availableQuantity'>) => {
     try {
         const componentToAdd: Omit<Component, 'id'> = {
             ...newComponent,
-            status: "Available",
+            availableQuantity: newComponent.totalQuantity,
             aiHint: `${newComponent.name.toLowerCase()} ${newComponent.category.toLowerCase()}`.trim(),
         };
         await addComponent(componentToAdd);
@@ -76,10 +76,14 @@ export default function ComponentsPage() {
     }
   }
 
-  const handleUpdateComponent = async (componentToUpdate: Omit<Component, 'id' | 'status' | 'aiHint'>) => {
+  const handleUpdateComponent = async (componentToUpdate: Omit<Component, 'id' | 'aiHint' | 'availableQuantity'>) => {
     if (!selectedComponent?.id) return;
     try {
-        await updateComponent(selectedComponent.id, componentToUpdate);
+        const availableQuantity = componentToUpdate.totalQuantity - (selectedComponent.totalQuantity - selectedComponent.availableQuantity)
+        await updateComponent(selectedComponent.id, {
+          ...componentToUpdate,
+          availableQuantity: Math.max(0, availableQuantity) // Ensure it doesn't go below zero
+        });
         mutate('components');
         toast({
             title: "Component Updated",

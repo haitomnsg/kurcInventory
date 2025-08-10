@@ -3,24 +3,24 @@ export type Component = {
   id?: string;
   name: string;
   category: string;
-  quantity: number;
-  status: 'Available' | 'Borrowed';
+  totalQuantity: number;
+  availableQuantity: number;
   condition: 'New' | 'Good' | 'Fair' | 'Poor';
-  imageUrl?: string;
-  borrowedBy?: string;
-  borrowDate?: string;
-  expectedReturnDate?: string;
   description: string;
   aiHint: string;
 };
 
 export type Log = {
   id?: string;
+  componentId: string;
   componentName: string;
   userName: string;
   contactNumber?: string;
+  quantity: number;
   status: 'Borrowed' | 'Returned';
   timestamp: string;
+  purpose?: string;
+  expectedReturnDate?: string;
   remarks?: string;
 };
 

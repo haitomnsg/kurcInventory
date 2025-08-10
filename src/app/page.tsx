@@ -51,6 +51,12 @@ export default function DashboardPage() {
     </div>
   )
 
+  const availableComponents = React.useMemo(() => {
+      if (!componentsData) return [];
+      return componentsData.filter(c => c.availableQuantity > 0).slice(0, 5);
+  }, [componentsData]);
+
+
   return (
     <AuthGuard>
       <SidebarProvider>
@@ -94,7 +100,7 @@ export default function DashboardPage() {
                                 </Link>
                             </CardHeader>
                             <CardContent>
-                                <ComponentTable components={(componentsData || []).filter(c => c.status === 'Available').slice(0,5)} minimal />
+                                <ComponentTable components={availableComponents} minimal />
                             </CardContent>
                         </Card>
                     </div>

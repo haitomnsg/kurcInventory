@@ -47,34 +47,36 @@ export default function LogsPage() {
   const handleIssueItem = async (details: { componentId: string; userName: string; purpose: string; expectedReturnDate: Date; contactNumber: string; quantity: number }) => {
     const component = componentsData?.find(c => c.id === details.componentId);
     if (!component || !component.id) return;
+    
+    if(details.quantity > component.availableQuantity) {
+        toast({ title: "Error", description: "Not enough items available to issue.", variant: "destructive" });
+        return;
+    }
 
     try {
-        // 1. Update component in Firestore
         await updateComponent(component.id, { 
-            status: "Borrowed", 
-            borrowedBy: details.userName, 
-            expectedReturnDate: details.expectedReturnDate.toISOString().split('T')[0],
-            // In a real scenario, you'd handle quantity decrease here.
-            // For this app's data model, one component entry can be borrowed by one person.
+            availableQuantity: component.availableQuantity - details.quantity,
         });
 
-        // 2. Add a new log entry in Firestore
         const newLog: Omit<Log, 'id'> = {
             componentName: component.name,
+            componentId: component.id,
             userName: details.userName,
             contactNumber: details.contactNumber,
+            quantity: details.quantity,
             status: "Borrowed",
             timestamp: new Date().toISOString(),
+            expectedReturnDate: details.expectedReturnDate.toISOString(),
+            purpose: details.purpose,
         };
         await addLog(newLog);
 
-        // 3. Revalidate SWR caches
         mutate('components');
         mutate('logs');
 
         toast({
             title: "Component Issued",
-            description: `${component.name} has been issued to ${details.userName}.`,
+            description: `${details.quantity} of ${component.name} has been issued to ${details.userName}.`,
         });
         setIsIssueDialogOpen(false);
     } catch (error) {
@@ -83,34 +85,33 @@ export default function LogsPage() {
     }
   }
 
-  const handleReturnItem = async (component: Component, remarks: string) => {
+  const handleReturnItem = async (logToReturn: Log, remarks: string) => {
+    if (!logToReturn?.componentId) return;
+    const component = componentsData?.find(c => c.id === logToReturn.componentId);
     if (!component || !component.id) return;
 
     try {
-        // 1. Update component in Firestore
         await updateComponent(component.id, { 
-            status: 'Available', 
-            borrowedBy: undefined, 
-            expectedReturnDate: undefined 
+            availableQuantity: component.availableQuantity + logToReturn.quantity,
         });
         
-        // 2. Add a new log entry
         const newLog: Omit<Log, 'id'> = {
             componentName: component.name,
-            userName: component.borrowedBy || 'Unknown',
+            componentId: component.id,
+            userName: logToReturn.userName,
+            quantity: logToReturn.quantity,
             status: "Returned",
             timestamp: new Date().toISOString(),
             remarks: remarks
         };
         await addLog(newLog);
         
-        // 3. Revalidate SWR caches
         mutate('components');
         mutate('logs');
 
         toast({
             title: "Component Returned",
-            description: `${component.name} has been returned.`,
+            description: `${logToReturn.quantity} of ${component.name} has been returned.`,
         });
         setIsReturnDialogOpen(false);
     } catch (error) {
@@ -134,8 +135,8 @@ export default function LogsPage() {
       );
   }, [logsData, searchTerm, filter]);
 
-  const availableComponents = React.useMemo(() => componentsData?.filter(c => c.status === 'Available') || [], [componentsData]);
-  const borrowedComponents = React.useMemo(() => componentsData?.filter(c => c.status === 'Borrowed') || [], [componentsData]);
+  const availableComponents = React.useMemo(() => componentsData?.filter(c => c.availableQuantity > 0) || [], [componentsData]);
+  const borrowedLogs = React.useMemo(() => logsData?.filter(log => log.status === 'Borrowed') || [], [logsData]);
   
   const isLoading = !logsData && !logsError || !componentsData && !componentsError;
 
@@ -218,6 +219,7 @@ export default function LogsPage() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Component</TableHead>
+                           <TableHead>Quantity</TableHead>
                           <TableHead>User</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Date</TableHead>
@@ -229,6 +231,7 @@ export default function LogsPage() {
                             filteredLogs.map((log) => (
                                 <TableRow key={log.id}>
                                 <TableCell className="font-medium">{log.componentName}</TableCell>
+                                <TableCell>{log.quantity}</TableCell>
                                 <TableCell>{log.userName}</TableCell>
                                 <TableCell>
                                     <Badge variant={log.status === "Borrowed" ? "destructive" : "secondary"}>
@@ -243,7 +246,7 @@ export default function LogsPage() {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center h-24">
+                                <TableCell colSpan={6} className="text-center h-24">
                                     No records found.
                                 </TableCell>
                             </TableRow>
@@ -264,13 +267,8 @@ export default function LogsPage() {
           <ReturnItemDialog
               open={isReturnDialogOpen}
               onOpenChange={setIsReturnDialogOpen}
-              components={borrowedComponents}
-              onReturn={(componentId, remarks) => {
-                  const componentToReturn = borrowedComponents.find(c => c.id === componentId);
-                  if (componentToReturn) {
-                      handleReturnItem(componentToReturn, remarks);
-                  }
-              }}
+              borrowedLogs={borrowedLogs}
+              onReturn={(log, remarks) => handleReturnItem(log, remarks)}
           />
         </SidebarInset>
       </SidebarProvider>

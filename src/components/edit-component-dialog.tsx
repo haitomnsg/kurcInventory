@@ -30,7 +30,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const editComponentSchema = z.object({
   name: z.string().min(1, "Name is required."),
   category: z.string().min(1, "Category is required."),
-  quantity: z.coerce.number().min(0, "Quantity must be 0 or more."),
+  totalQuantity: z.coerce.number().min(0, "Quantity must be 0 or more."),
   condition: z.enum(["New", "Good", "Fair", "Poor"]),
   description: z.string().min(1, "Description is required."),
 });
@@ -51,7 +51,7 @@ export function EditComponentDialog({ component, onEditComponent, open, onOpenCh
     defaultValues: {
       name: component.name,
       category: component.category,
-      quantity: component.quantity,
+      totalQuantity: component.totalQuantity,
       condition: component.condition,
       description: component.description,
     },
@@ -62,7 +62,7 @@ export function EditComponentDialog({ component, onEditComponent, open, onOpenCh
         form.reset({
             name: component.name,
             category: component.category,
-            quantity: component.quantity,
+            totalQuantity: component.totalQuantity,
             condition: component.condition,
             description: component.description,
         });
@@ -122,10 +122,10 @@ export function EditComponentDialog({ component, onEditComponent, open, onOpenCh
                 />
                 <FormField
                 control={form.control}
-                name="quantity"
+                name="totalQuantity"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Quantity</FormLabel>
+                    <FormLabel>Total Quantity</FormLabel>
                     <FormControl>
                         <Input type="number" {...field} />
                     </FormControl>

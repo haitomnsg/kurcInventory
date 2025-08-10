@@ -11,11 +11,9 @@ type InventorySummaryProps = {
 
 export default function InventorySummary({ components }: InventorySummaryProps) {
   const summary = React.useMemo(() => {
-    const total = components.reduce((sum, item) => sum + item.quantity, 0);
-    const borrowed = components
-      .filter((item) => item.status === "Borrowed")
-      .reduce((sum, item) => sum + item.quantity, 0);
-    const available = total - borrowed;
+    const total = components.reduce((sum, item) => sum + item.totalQuantity, 0);
+    const available = components.reduce((sum, item) => sum + item.availableQuantity, 0);
+    const borrowed = total - available;
     return { total, borrowed, available };
   }, [components]);
 
