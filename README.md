@@ -36,8 +36,6 @@ An intelligent inventory management system built for the Kathmandu University Ro
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/)
 - **Database**: [Cloud Firestore](https://firebase.google.com/docs/firestore)
 - **Authentication**: [Firebase Authentication](https://firebase.google.com/docs/auth)
-- **Generative AI**: [Firebase Genkit](https://firebase.google.com/docs/genkit)
-- **Deployment**: [Firebase App Hosting](https://firebase.google.com/docs/app-hosting)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 
 ---
